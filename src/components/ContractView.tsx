@@ -1,283 +1,342 @@
 "use client";
 
+/**
+ * The contract: the same job, papered.
+ *
+ * Clause selection is deterministic — the state's trigger expressions are
+ * evaluated against this job's facts (total price, down payment), and each
+ * selected clause keeps its statute cite on the face of the document, because
+ * a clause a contractor cannot trace is a clause they cannot defend.
+ *
+ * "Template, not legal advice" is on every contract surface, in flag orange,
+ * with an icon and the words. It is the highest-stakes claim in the product:
+ * clause language here is UNVERIFIED and awaits construction attorney review.
+ */
+
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useForm } from "react-hook-form";
 
 import {
-  formatCents,
   getStateRules,
   getTradeRules,
   selectClauses,
   STATE_IDS,
-  type Estimate,
   type StateId,
 } from "@engine";
 
-import { loadContractFacts, loadEstimate, saveContractFacts } from "@/lib/store";
-
-interface ContractFormValues {
-  stateId: StateId;
-  downPaymentDollars: number;
-  contractorName: string;
-  ownerName: string;
-}
+import {
+  Button,
+  EmptyState,
+  FactTable,
+  Field,
+  Input,
+  LedgerTable,
+  NumberInput,
+  Select,
+  SourceCitation,
+  WarningStack,
+  type LedgerRow,
+  type Warning,
+} from "@/components/ui";
+import { formatCents, usd } from "@/lib/format";
+import { saveContractFacts, useStoredContractFacts, useStoredEstimate } from "@/lib/store";
 
 export default function ContractView() {
-  const [estimate, setEstimate] = useState<Estimate | null>(null);
-  const [loaded, setLoaded] = useState(false);
+  /* `undefined` = still hydrating; `null` = nothing saved. Both come straight
+     out of localStorage through useSyncExternalStore, so nothing here has to
+     copy storage into state inside an effect. */
+  const estimate = useStoredEstimate();
+  const stored = useStoredContractFacts();
 
-  const { register, watch, setValue } = useForm<ContractFormValues>({
-    mode: "onChange",
-    defaultValues: {
-      stateId: "CA",
-      downPaymentDollars: 0,
-      contractorName: "",
-      ownerName: "",
-    },
-  });
-  const values = watch();
+  /* An edit wins over what was stored; until the user edits, the stored value
+     IS the value. No effect seeds the form, so there is no frame where the
+     contract shows California to someone who saved Texas. */
+  const [stateEdit, setStateEdit] = useState<StateId | null>(null);
+  const [downPaymentEdit, setDownPaymentEdit] = useState<number | null>(null);
+  const [contractorName, setContractorName] = useState("");
+  const [ownerName, setOwnerName] = useState("");
 
-  useEffect(() => {
-    setEstimate(loadEstimate());
-    const facts = loadContractFacts();
-    if (facts) {
-      setValue("stateId", facts.stateId);
-      setValue("downPaymentDollars", facts.downPaymentCents / 100);
-    }
-    setLoaded(true);
-  }, [setValue]);
+  const stateId = stateEdit ?? stored?.stateId ?? "CA";
+  const downPaymentCents = downPaymentEdit ?? stored?.downPaymentCents ?? 0;
+
+  const stateRules = getStateRules(stateId);
 
   const selection = useMemo(() => {
     if (!estimate) return null;
-    const stateRules = getStateRules(values.stateId ?? "CA");
-    const downPaymentCents = Number.isFinite(values.downPaymentDollars)
-      ? Math.max(0, Math.round(values.downPaymentDollars * 100))
-      : 0;
-    return {
-      result: selectClauses(stateRules, {
-        totalCents: estimate.totals.totalCents,
-        downPaymentCents,
-      }),
-      stateRules,
+    return selectClauses(stateRules, {
+      totalCents: estimate.totals.totalCents,
       downPaymentCents,
-    };
-  }, [estimate, values.stateId, values.downPaymentDollars]);
+    });
+  }, [estimate, stateRules, downPaymentCents]);
 
+  /* Writing OUT to an external store is exactly what an effect is for. */
   useEffect(() => {
-    if (loaded && selection) {
-      saveContractFacts({
-        stateId: selection.stateRules.stateId,
-        downPaymentCents: selection.downPaymentCents,
-      });
-    }
-  }, [loaded, selection]);
+    if (estimate) saveContractFacts({ stateId, downPaymentCents });
+  }, [estimate, stateId, downPaymentCents]);
 
-  if (!loaded) return null;
+  if (estimate === undefined) return null;
 
   if (!estimate || !selection) {
     return (
-      <div className="rounded border border-rule bg-sheet p-8 text-center">
-        <p className="mb-4">
-          No estimate yet — the contract pulls its price and scope from your takeoff sheet.
-        </p>
-        <Link
-          href="/"
-          className="btn inline-flex items-center rounded bg-signal px-4 py-2.5 font-semibold text-white"
-        >
-          Build your estimate
-        </Link>
-      </div>
+      <EmptyState
+        heading="No job on the sheet yet"
+        message="The contract pulls its price and its scope straight from your takeoff sheet, so it needs an estimate first."
+        action={
+          <Link href="/">
+            <Button className="touch-lg">Price a job</Button>
+          </Link>
+        }
+      />
     );
   }
 
-  const { result, stateRules } = selection;
   const tradeRules = getTradeRules(estimate.job.trade);
-  const inputClass = "w-full rounded border border-rule bg-sheet px-3 py-2";
+
+  const warnings: Warning[] = [
+    {
+      id: "not-legal-advice",
+      severity: "irreversible",
+      label: "Template only",
+      title: (
+        <>
+          This is a contract template, not legal advice — and the clause wording is
+          UNVERIFIED.
+        </>
+      ),
+      body: (
+        <>
+          JobPaper selects which clauses {stateRules.stateName} law appears to require for a
+          job of this size. A construction attorney must confirm both the list and the exact
+          statutory wording before you put this in front of a customer. A signed contract
+          missing a required clause can be voidable — that is the risk this notice exists
+          for.
+        </>
+      ),
+    },
+  ];
+
+  const scopeRows: LedgerRow[] = estimate.lineItems.map((li) => ({
+    id: li.id,
+    cells: {
+      item: li.description,
+      qty: li.qty,
+      unit: <span className="text-dim">{li.unit}</span>,
+    },
+  }));
+
+  const clauseRows: LedgerRow[] = selection.clauses.map((clause, i) => ({
+    id: clause.id,
+    cells: {
+      clause: (
+        <span className="flex min-w-0 flex-col items-start gap-1">
+          <span className="text-ink" style={{ fontWeight: 600 }}>
+            3.{i + 1} {clause.title}
+          </span>
+          <span className="text-dim" style={{ fontWeight: 400 }}>
+            {clause.text}
+          </span>
+          <span className="pinned-note">Included because: {clause.reason}</span>
+        </span>
+      ),
+      statute: (
+        <span className="num text-dim" style={{ fontSize: "var(--text-step--2)" }}>
+          {clause.statute}
+        </span>
+      ),
+    },
+  }));
 
   return (
     <div className="space-y-6">
       <form
-        className="no-print grid max-w-3xl grid-cols-2 gap-3 sm:grid-cols-4"
+        className="no-print grid grid-cols-2 gap-3 sm:grid-cols-4"
         aria-label="Contract details"
+        onSubmit={(e) => e.preventDefault()}
       >
-        <div>
-          <label htmlFor="stateId" className="mb-1 block text-sm font-semibold">
-            State
-          </label>
-          <select id="stateId" className={inputClass} {...register("stateId")}>
-            {STATE_IDS.map((s) => (
-              <option key={s} value={s}>
-                {getStateRules(s).stateName}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label htmlFor="downPaymentDollars" className="mb-1 block text-sm font-semibold">
-            Down payment ($)
-          </label>
-          <input
-            id="downPaymentDollars"
-            type="number"
-            min={0}
-            step={0.01}
-            className={`${inputClass} num`}
-            {...register("downPaymentDollars", { valueAsNumber: true })}
+        <Field label="State" htmlFor="stateId" className="min-w-0">
+          <Select
+            id="stateId"
+            value={stateId}
+            onChange={(v) => setStateEdit(v as StateId)}
+            options={STATE_IDS.map((s) => ({
+              value: s,
+              label: getStateRules(s).stateName,
+            }))}
           />
-        </div>
-        <div>
-          <label htmlFor="contractorName" className="mb-1 block text-sm font-semibold">
-            Contractor
-          </label>
-          <input
+        </Field>
+        <Field label="Down payment" htmlFor="downPayment" className="min-w-0">
+          <NumberInput
+            id="downPayment"
+            unit="cents"
+            value={downPaymentCents}
+            onChange={setDownPaymentEdit}
+            min={0}
+            max={estimate.totals.totalCents}
+            step={10000}
+          />
+        </Field>
+        <Field label="Contractor" htmlFor="contractorName" className="min-w-0">
+          <Input
             id="contractorName"
             placeholder="Your business name"
-            className={inputClass}
-            {...register("contractorName")}
+            value={contractorName}
+            onChange={(e) => setContractorName(e.currentTarget.value)}
           />
-        </div>
-        <div>
-          <label htmlFor="ownerName" className="mb-1 block text-sm font-semibold">
-            Owner
-          </label>
-          <input
+        </Field>
+        <Field label="Owner" htmlFor="ownerName" className="min-w-0">
+          <Input
             id="ownerName"
             placeholder="Customer name"
-            className={inputClass}
-            {...register("ownerName")}
+            value={ownerName}
+            onChange={(e) => setOwnerName(e.currentTarget.value)}
           />
-        </div>
+        </Field>
       </form>
 
-      <div className="print-sheet max-w-3xl rounded border border-rule bg-sheet p-4 shadow-sm sm:p-6">
-        <p className="mb-4 border-l-4 border-flag pl-3 text-sm font-semibold text-flag">
-          Template, not legal advice. Clause language is UNVERIFIED and requires attorney
-          review before use. JobPaper selects which clauses {stateRules.stateName} law
-          appears to require — a construction attorney must confirm the wording and the
-          list.
-        </p>
+      <div
+        className="print-sheet hairline-all rounded-atlas min-w-0 p-4 sm:p-6"
+        style={{ borderRadius: "var(--radius-atlas)", background: "var(--paper)" }}
+      >
+        <WarningStack warnings={warnings} className="mb-4" />
 
-        <header className="mb-4 border-b-2 border-ink pb-3">
-          <p className="text-xs font-semibold tracking-widest text-dim">
-            HOME IMPROVEMENT CONTRACT — {stateRules.stateName.toUpperCase()} TEMPLATE
+        <header className="hairline-b mb-4 pb-3">
+          <p className="micro-label">
+            Home improvement contract — {stateRules.stateName} template
           </p>
-          <h1 className="text-xl font-bold">
+          <h2>
             {tradeRules.label} — {formatCents(estimate.totals.totalCents)}
-          </h1>
-          <p className="text-sm text-dim">
-            Contractor: {values.contractorName || "____________________"} · Owner:{" "}
-            {values.ownerName || "____________________"}
-            {result.licenseDisplayRequired ? (
+          </h2>
+          <p className="text-dim" style={{ fontSize: "var(--text-step--1)" }}>
+            Contractor: {contractorName || "____________________"} · Owner:{" "}
+            {ownerName || "____________________"}
+            {selection.licenseDisplayRequired ? (
               <>
                 {" "}
-                · License/registration #: ____________ (display required in{" "}
+                · License / registration #: ____________ (display required in{" "}
                 {stateRules.stateName})
               </>
             ) : null}
           </p>
         </header>
 
-        <section className="mb-4">
-          <h2 className="mb-1 text-sm font-bold uppercase tracking-wide">1. Scope of work</h2>
-          <ul className="list-disc space-y-0.5 ps-5 text-sm">
-            {estimate.lineItems.map((li) => (
-              <li key={li.id}>
-                {li.description} — <span className="num">{li.qty}</span> {li.unit}
-              </li>
-            ))}
-          </ul>
+        <section className="mb-6">
+          <h3 className="mb-2">1. Scope of work</h3>
+          <LedgerTable
+            caption={`Scope of work: ${scopeRows.length} line items carried over from the takeoff sheet`}
+            columns={[
+              { id: "item", label: "Item" },
+              { id: "qty", label: "Qty", numeric: true },
+              { id: "unit", label: "Unit" },
+            ]}
+            rows={scopeRows}
+          />
         </section>
 
-        <section className="mb-4">
-          <h2 className="mb-1 text-sm font-bold uppercase tracking-wide">2. Price & payment</h2>
-          <p className="text-sm">
-            Contract price: <span className="num font-semibold">{formatCents(estimate.totals.totalCents)}</span>.
-            Down payment: <span className="num">{formatCents(selection.downPaymentCents)}</span>.
-            Remaining payments to be scheduled against work performed and materials
-            delivered.
+        <section className="mb-6">
+          <h3 className="mb-2">2. Price and payment</h3>
+          <FactTable
+            caption="Contract price and payment facts"
+            rows={[
+              { key: "Contract price", value: formatCents(estimate.totals.totalCents) },
+              { key: "Down payment", value: formatCents(downPaymentCents) },
+              {
+                key: "Balance on completion",
+                value: formatCents(estimate.totals.totalCents - downPaymentCents),
+              },
+              {
+                key: `${stateRules.stateName} written-contract threshold`,
+                value:
+                  selection.homeImprovementThresholdCents > 0
+                    ? usd(selection.homeImprovementThresholdCents)
+                    : "None stated",
+              },
+              {
+                key: "This job is over that threshold",
+                value: selection.overThreshold ? "Yes" : "No",
+                mono: false,
+              },
+            ]}
+          />
+          <p className="text-dim mt-2" style={{ fontSize: "var(--text-step--1)" }}>
+            Remaining payments are scheduled against work performed and materials delivered.
           </p>
         </section>
 
-        <section className="mb-4">
-          <h2 className="mb-1 text-sm font-bold uppercase tracking-wide">
+        <section className="mb-6">
+          <h3 className="mb-2">
             3. Clauses {stateRules.stateName} law requires for this job
-          </h2>
-          <ol className="space-y-3 ps-0">
-            {result.clauses.map((clause, i) => (
-              <li key={clause.id} className="rounded border border-rule p-3">
-                <p className="mb-1 flex flex-wrap items-baseline justify-between gap-2 text-sm font-semibold">
-                  <span>
-                    3.{i + 1} {clause.title}
-                  </span>
-                  <span className="num text-xs font-normal text-dim">{clause.statute}</span>
-                </p>
-                <p className="text-sm">{clause.text}</p>
-                <p className="mt-1 text-xs text-dim">Included because: {clause.reason}</p>
-              </li>
-            ))}
-          </ol>
+          </h3>
+          <LedgerTable
+            caption={`${clauseRows.length} clauses selected deterministically from ${stateRules.stateName} rules and this job's facts`}
+            columns={[
+              { id: "clause", label: "Clause" },
+              { id: "statute", label: "Statute" },
+            ]}
+            rows={clauseRows}
+          />
         </section>
 
-        {result.prohibitedTerms.length > 0 ? (
-          <section className="mb-4">
-            <h2 className="mb-1 text-sm font-bold uppercase tracking-wide">
-              Do not add these terms
-            </h2>
-            <p className="mb-1 text-xs text-dim">
-              {stateRules.stateName} restricts or prohibits the following in home
-              improvement contracts:
-            </p>
-            <ul className="list-disc space-y-0.5 ps-5 text-sm">
-              {result.prohibitedTerms.map((t) => (
+        {selection.prohibitedTerms.length > 0 ? (
+          <section className="mb-6">
+            <h3 className="mb-2">4. Terms {stateRules.stateName} does not allow</h3>
+            <ul className="text-dim ml-5 list-disc" style={{ fontSize: "var(--text-step--1)" }}>
+              {selection.prohibitedTerms.map((t) => (
                 <li key={t}>{t}</li>
               ))}
             </ul>
           </section>
         ) : null}
 
-        <section className="mb-2 grid grid-cols-2 gap-8 pt-6 text-sm">
+        <section className="mt-8 grid grid-cols-2 gap-8">
           <div>
-            <div className="border-b border-ink pb-8" aria-hidden="true" />
-            <p className="mt-1">Contractor signature · date</p>
+            <div className="pb-10" style={{ borderBottom: "1px solid var(--ink)" }} />
+            <p className="micro-label mt-1">Contractor signature · date</p>
           </div>
           <div>
-            <div className="border-b border-ink pb-8" aria-hidden="true" />
-            <p className="mt-1">Owner signature · date</p>
+            <div className="pb-10" style={{ borderBottom: "1px solid var(--ink)" }} />
+            <p className="micro-label mt-1">Owner signature · date</p>
           </div>
         </section>
 
-        <footer className="mt-4 border-t border-rule pt-3 text-xs text-dim">
-          <p>
-            Ruleset {result.ruleSetVersion} · sources:{" "}
-            {result.citations.map((c) => c.label).join(" · ")} · clause selection is
-            deterministic from the job facts (total{" "}
+        <footer
+          className="hairline-t text-dim mt-6 pt-3"
+          style={{ fontSize: "var(--text-step--2)" }}
+        >
+          <p style={{ maxWidth: "var(--measure)" }}>
+            Ruleset <span className="num">{selection.ruleSetVersion}</span>. Clauses were
+            selected from this job&apos;s facts — total{" "}
             <span className="num">{formatCents(estimate.totals.totalCents)}</span>, down
-            payment <span className="num">{formatCents(selection.downPaymentCents)}</span>).
-            This is a template, not legal advice.
+            payment <span className="num">{formatCents(downPaymentCents)}</span>. Sources:{" "}
+            {selection.citations.map((c, i) => (
+              <span key={c.label}>
+                {c.label}
+                <SourceCitation
+                  index={i + 1}
+                  label={c.label}
+                  url={c.url}
+                  lastVerified={c.lastVerified}
+                />
+                {i < selection.citations.length - 1 ? " · " : ""}
+              </span>
+            ))}
+            . This is a template, not legal advice.
           </p>
         </footer>
       </div>
 
-      <div className="no-print flex flex-wrap gap-3">
-        <button
-          type="button"
-          onClick={() => window.print()}
-          className="rounded bg-signal px-4 py-2.5 font-semibold text-white"
-        >
-          Print contract
-        </button>
-        <Link
-          href={`/contracts/${stateRules.stateId}`}
-          className="btn inline-flex items-center rounded border border-rule px-4 py-2.5 font-semibold"
-        >
-          What {stateRules.stateName} requires
+      <div className="no-print flex flex-wrap gap-2">
+        <Button className="touch-lg" onClick={() => window.print()}>
+          Print this contract
+        </Button>
+        <Link href={`/contracts/${stateRules.stateId}`}>
+          <Button variant="secondary" className="touch-lg">
+            What {stateRules.stateName} requires
+          </Button>
         </Link>
-        <Link
-          href="/"
-          className="btn inline-flex items-center rounded border border-rule px-4 py-2.5 font-semibold"
-        >
-          Back to estimate
+        <Link href="/">
+          <Button variant="ghost" className="touch-lg">
+            Back to the sheet
+          </Button>
         </Link>
       </div>
     </div>

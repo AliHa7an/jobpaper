@@ -1,81 +1,357 @@
 @import "tailwindcss";
 
-/*
- * JobPaper design tokens — "the takeoff sheet".
- * Site-white paper, steel ink, safety-blue signal.
- * Flag orange is reserved for high-stakes warnings ONLY (placeholder
- * pricing, unverified legal templates). Never decorative.
- */
+/* ============================================================================
+ * DESIGN TOKENS — authoritative source: 07-DESIGN-SYSTEM.md
+ * JobPaper identity: "the takeoff sheet."
+ *
+ * Site white, steel ink, safety blue, flag orange. Same scale, same spacing,
+ * same motion and the same six semantic names as every other app in the
+ * portfolio — only the six colour VALUES differ. That is what makes
+ * src/components/ui/ portable: swap this block, re-theme the whole system.
+ *
+ * Contrast measured against --paper (#F7F7F5). WCAG 2.2 AA needs 4.5:1 for
+ * body text:
+ *   --ink    #20242A  →  14.53:1  ✓
+ *   --dim    #666B73  →   5.00:1  ✓
+ *   --signal #155EA8  →   6.12:1  ✓
+ *   --flag   #AD5210  →   4.91:1  ✓   ← SUBSTITUTED, see note
+ * --rule is a hairline, never text; exempt from the text threshold.
+ *
+ * FLAG NOTE — DO NOT "FIX" THIS BACK.
+ * 07-DESIGN-SYSTEM §5 lists JobPaper's flag orange as #C25E10. Measured, that
+ * is 3.99:1 against this paper — it FAILS AA for body text. §3 of the same doc
+ * anticipates exactly this ("several plausible values fail — check it"), so the
+ * token is darkened to #AD5210 (4.91:1): same hue family, unmistakably flag
+ * orange, comfortably above the threshold. It matters more here than elsewhere
+ * because flag orange carries the placeholder-pricing warning and the
+ * state-law compliance notes — the text a contractor reads on a phone, outdoors.
+ * ==========================================================================*/
+
 @theme {
-  --color-paper: #f7f7f5;
-  --color-ink: #20242a;
-  --color-signal: #155ea8;
-  --color-flag: #c25e10;
-  --color-rule: #d6d6d1;
-  --color-dim: #5a616c;
-  --color-sheet: #ffffff;
+  /* ---- Colour: six semantic tokens. No app defines a seventh. ---- */
+  --color-paper: #f7f7f5; /* site white — the sheet, not a warm cream */
+  --color-ink: #20242a; /* steel: text, headings, hairlines at alpha */
+  --color-rule: #d5d7da; /* hairlines, table borders, ruled sheet lines */
+  --color-dim: #666b73; /* secondary text, labels, captions */
+  --color-signal: #155ea8; /* safety blue: the total, the recommended path */
+  --color-flag: #ad5210; /* flag orange: HIGH-STAKES facts ONLY (see note) */
 
-  --font-display: var(--font-bricolage), system-ui, sans-serif;
-  --font-body: var(--font-public-sans), system-ui, sans-serif;
-  --font-data: var(--font-plex-mono), ui-monospace, monospace;
+  /* ---- Type: three roles, no more. Wired from next/font on <html>. ---- */
+  --font-display: var(--font-bricolage), "Bricolage Grotesque", system-ui, sans-serif;
+  --font-body: var(--font-public-sans), "Public Sans", system-ui, sans-serif;
+  --font-data: var(--font-plex-mono), "IBM Plex Mono", ui-monospace, monospace;
 
-  --radius: 3px;
-  --radius-sm: 3px;
-  --radius-md: 3px;
-  --radius-lg: 3px;
+  /* ---- Scale: 1.25 ratio, tight. Documents, not landing pages. ---- */
+  --text-step--2: 0.694rem; /* 11.1px  micro labels, citations */
+  --text-step--1: 0.833rem; /* 13.3px  table cells, captions, helper text */
+  --text-step-0: 1rem; /* 16px    body */
+  --text-step-1: 1.25rem; /* 20px    lead paragraph, h3 */
+  --text-step-2: 1.563rem; /* 25px    h2 */
+  --text-step-3: 1.953rem; /* 31px    h1 */
+  --text-step-4: 2.441rem; /* 39px    THE single hero number */
+
+  /* ---- Spacing: 4px base. ---- */
+  --spacing-1: 4px;
+  --spacing-2: 8px;
+  --spacing-3: 12px;
+  --spacing-4: 16px;
+  --spacing-6: 24px;
+  --spacing-8: 32px;
+  --spacing-12: 48px;
+  --spacing-16: 64px;
+  --spacing-24: 96px;
+
+  /* ---- Radius: 3px on everything. Documents don't have bubbles. ---- */
+  --radius-atlas: 3px;
+
+  /* ---- Motion: three durations, one moment. ---- */
+  --ease-atlas: cubic-bezier(0.2, 0, 0.13, 1);
 }
 
-body {
-  background: var(--color-paper);
-  color: var(--color-ink);
-  font-family: var(--font-body);
+:root {
+  /* Raw aliases so components can use var(--ink) without the Tailwind prefix. */
+  --paper: var(--color-paper);
+  --ink: var(--color-ink);
+  --rule: var(--color-rule);
+  --dim: var(--color-dim);
+  --signal: var(--color-signal);
+  --flag: var(--color-flag);
+
+  /* The default hairline. The ONLY separator in the system — no shadows. */
+  --hairline: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
+  --hairline-strong: 1px solid color-mix(in srgb, var(--ink) 22%, transparent);
+
+  /* A single half-step background shift. Elevation is never used. */
+  --paper-raised: color-mix(in srgb, var(--ink) 3%, var(--paper));
+  --paper-sunken: color-mix(in srgb, var(--ink) 5%, var(--paper));
+
+  --dur-fast: 120ms; /* hover, focus, toggle */
+  --dur-base: 200ms; /* panel open, value tween */
+  --dur-signature: 700ms; /* the one moment: line items landing on the sheet */
+  --ease: var(--ease-atlas);
+
+  --measure: 68ch; /* prose measure cap */
+
+  /* JobPaper only: this tool is used one-handed, on a phone, on a job site.
+     44px is the portfolio floor; primary actions here clear it deliberately. */
+  --touch: 48px;
 }
 
-/* Every number on the site: mono, tabular. Non-negotiable. */
-.num {
-  font-family: var(--font-data);
-  font-variant-numeric: tabular-nums;
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast: 0ms;
+    --dur-base: 0ms;
+    --dur-signature: 0ms;
+  }
 }
 
-h1 {
-  font-family: var(--font-display);
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: var(--text-step-0);
+    line-height: 1.5;
+  }
+
+  /* Display face is confined to h1/h2. Never body, buttons, labels, tables. */
+  h1,
+  h2 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: -0.011em;
+    text-wrap: balance;
+  }
+  h1 {
+    font-size: var(--text-step-3);
+  }
+  h2 {
+    font-size: var(--text-step-2);
+  }
+  /* h3 stays in the body face — display would make the page busy. */
+  h3 {
+    font-family: var(--font-body);
+    font-size: var(--text-step-1);
+    font-weight: 600;
+    line-height: 1.3;
+  }
+
+  /* Focus ring: the only box-shadow-adjacent effect in the codebase. */
+  :focus-visible {
+    outline: 2px solid var(--signal);
+    outline-offset: 2px;
+    border-radius: var(--radius-atlas);
+  }
+
+  ::selection {
+    background: color-mix(in srgb, var(--signal) 22%, transparent);
+  }
+
+  input,
+  select,
+  textarea,
+  button {
+    font-family: inherit;
+    font-size: inherit;
+  }
 }
 
-/* Visible focus, never outline: none */
-:focus-visible {
-  outline: 3px solid var(--color-signal);
-  outline-offset: 2px;
+@layer components {
+  /* ---- Numbers: the highest-leverage detail in the system. ------------- */
+  .num {
+    font-family: var(--font-data);
+    font-variant-numeric: tabular-nums lining-nums;
+    font-feature-settings: "tnum" 1, "lnum" 1;
+  }
+  /* Right-align numerics in tables so decimal points stack. */
+  .num-cell {
+    text-align: right;
+    white-space: nowrap;
+  }
+  /* Negative and forfeited amounts: flag colour with a minus, never parens. */
+  .num-negative {
+    color: var(--flag);
+  }
+
+  /* ---- Micro-label: the caps-lowercase label above a figure. ---------- */
+  .micro-label {
+    font-family: var(--font-body);
+    font-size: var(--text-step--2);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--dim);
+    font-weight: 600;
+  }
+  /* `.micro-label` is declared after `.num` and sets the body face, so at equal
+     specificity it silently wins on any element carrying both. Restore it. */
+  .micro-label.num {
+    font-family: var(--font-data);
+    letter-spacing: 0;
+  }
+
+  /* ---- Density: two, applied deliberately. Never one compromise. ------ */
+  .density-instrument {
+    --cell-pad-y: 8px;
+    --cell-pad-x: 12px;
+    --row-h: 32px;
+    font-size: var(--text-step--1);
+    line-height: 1.35;
+  }
+  .density-reading {
+    max-width: var(--measure);
+    line-height: 1.5;
+  }
+  .density-reading > * + * {
+    margin-top: var(--spacing-6);
+  }
+
+  .hairline-t {
+    border-top: var(--hairline);
+  }
+  .hairline-b {
+    border-bottom: var(--hairline);
+  }
+  .hairline-all {
+    border: var(--hairline);
+  }
+
+  /* ---- JobPaper: the takeoff sheet ------------------------------------ */
+  /* A ruled row. The rule IS the sheet — it is not decoration, it is the
+     line the item is written on. */
+  .takeoff-row {
+    border-bottom: 1px solid var(--rule);
+  }
+
+  /* Primary actions on the job screens. Above the 44px floor because this
+     tool is operated with one thumb, standing up, sometimes in gloves. */
+  .touch-lg {
+    min-height: var(--touch);
+  }
+
+  /* THE SIGNATURE MOMENT — line items materialising on the sheet.
+     Fired once, on the first estimate render only, orchestrated across
+     --dur-signature (700ms) by per-row delays set in JS. Never on a
+     recalculation, where it would be noise. The JS gate checks
+     prefers-reduced-motion itself and simply skips to the end state. */
+  @keyframes takeoff-line-in {
+    from {
+      opacity: 0;
+      transform: translateY(-3px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* An assumption pinned to its line. Small, ruled to the left, never a badge. */
+  .pinned-note {
+    font-size: var(--text-step--2);
+    color: var(--dim);
+    border-left: 2px solid var(--rule);
+    padding-left: 8px;
+    display: block;
+  }
 }
 
-/* Ruled-sheet rows */
-.takeoff-row {
-  border-bottom: 1px solid var(--color-rule);
+@layer utilities {
+  /* Screen-reader-only, used for every signature visual's table equivalent.
+   *
+   * `table-layout: fixed` and `max-width` are load-bearing, not belt-and-braces:
+   * a <table> under the default `auto` layout treats `width: 1px` as a MINIMUM
+   * and still sizes to its content. Without them these tables lay out ~1400px
+   * wide and, although `clip` hides them, they extend the document's scrollable
+   * width — which put a horizontal scrollbar on every viewport. Verified with a
+   * layout probe at 375/768/1440. */
+  .sr-only-table {
+    position: absolute;
+    left: -10000px;
+    top: auto;
+    width: 1px;
+    max-width: 1px;
+    height: 1px;
+    table-layout: fixed;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+    border-width: 0;
+  }
 }
 
-/* Big touch targets: used on phones, in trucks */
-button,
-select,
-a.btn,
-input:not([type="checkbox"]) {
-  min-height: 44px;
-}
-
-/* Print stylesheet: the on-screen sheet IS the document */
+/* ============================================================================
+ * PRINT — the sheet on screen IS the document the client receives.
+ * Nothing is re-laid-out for print; chrome is removed and the editable fields
+ * shed their control dressing so the estimate prints as a typed document.
+ * ==========================================================================*/
 @media print {
   .no-print {
     display: none !important;
   }
+
   body {
     background: #ffffff;
+    color: #000000;
   }
+
   .print-sheet {
-    box-shadow: none !important;
     border: none !important;
     margin: 0 !important;
+    padding: 0 !important;
     max-width: none !important;
+    width: 100% !important;
   }
+
+  /* A scroll container must not clip the document it holds. */
+  .print-sheet [class*="overflow-x-auto"],
+  .print-sheet .overflow-x-auto {
+    overflow: visible !important;
+  }
+  .print-sheet table {
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+
+  /* Inputs print as the values they hold, not as boxes. */
+  .print-sheet input,
+  .print-sheet select {
+    border: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    min-height: 0 !important;
+    appearance: none !important;
+    color: #000000 !important;
+    font-weight: 500;
+  }
+
   a {
     text-decoration: none;
     color: inherit;
+  }
+
+  /* The builder is a two-track grid on screen. Hiding the form track does NOT
+     remove it, so the sheet would auto-place into the 240px column and print
+     as a sliver. Collapse the grid instead. */
+  .takeoff-grid {
+    display: block !important;
+  }
+
+  /* The phone layout is a reading aid, not the document. Paper prints the
+     ruled table, at every paper width. */
+  .sheet-stack {
+    display: none !important;
+  }
+  .sheet-table {
+    display: block !important;
+  }
+
+  /* Never break a line item across pages. */
+  tr,
+  li {
+    break-inside: avoid;
   }
 }

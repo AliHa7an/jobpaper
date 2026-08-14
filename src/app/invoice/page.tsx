@@ -5,16 +5,16 @@ import InvoiceView from "@/components/InvoiceView";
 export const metadata: Metadata = {
   title: "Invoice — Matches Your Estimate to the Cent",
   description:
-    "Generate an invoice that mirrors your takeoff-sheet estimate line for line, with deposit tracking and a printable layout. Free, no signup.",
+    "Turn your takeoff sheet into an invoice that mirrors it line for line, tracks the deposit, and prints clean. Free, no signup.",
 };
 
 export default function InvoicePage() {
   return (
     <div className="space-y-6">
       <div className="no-print">
-        <h1 className="text-3xl font-bold">Your invoice</h1>
-        <p className="mt-1 max-w-2xl text-dim">
-          Built from your saved estimate — same lines, same total, to the cent.
+        <h1>Your invoice</h1>
+        <p className="text-dim mt-1" style={{ maxWidth: "var(--measure)" }}>
+          Built from the estimate you saved — same lines, same total, to the cent.
         </p>
       </div>
       <InvoiceView />

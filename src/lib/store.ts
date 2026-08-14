@@ -1,9 +1,23 @@
+"use client";
+
 /**
  * localStorage persistence for the current documents. v1 stores nothing
- * server-side: no database, no accounts. Persisted state is Zod-validated
- * on load — never trust what came back from storage.
+ * server-side: no database, no accounts. Persisted state is Zod-validated on
+ * load — never trust what came back from storage.
+ *
+ * Reads go through `useSyncExternalStore`, not an effect, because that is what
+ * localStorage is: an external store React has to subscribe to. The snapshot
+ * functions memoise on the RAW string, so repeated snapshot reads return the
+ * same object identity and React does not loop.
+ *
+ * The server snapshot is `undefined`, meaning "not known yet" — distinct from
+ * `null`, which means "checked, and there is nothing saved". That distinction
+ * is what lets the invoice and contract screens render nothing during
+ * hydration instead of flashing their empty state at a user who has an
+ * estimate saved.
  */
 
+import { useSyncExternalStore } from "react";
 import { z } from "zod";
 
 import type { Estimate } from "@engine";
@@ -70,32 +84,71 @@ export const contractFactsSchema = z.object({
 
 export type StoredContractFacts = z.infer<typeof contractFactsSchema>;
 
-export function saveEstimate(estimate: Estimate): void {
-  window.localStorage.setItem(ESTIMATE_KEY, JSON.stringify(estimate));
+/* ── plumbing ───────────────────────────────────────────────────────────── */
+
+function subscribe(onChange: () => void): () => void {
+  // "storage" fires for other tabs only, which is exactly right: this tab
+  // already re-renders from its own state when it writes.
+  window.addEventListener("storage", onChange);
+  return () => window.removeEventListener("storage", onChange);
 }
 
-export function loadEstimate(): Estimate | null {
+/** Memoise a parse on the raw string so the snapshot is referentially stable. */
+function snapshotReader<T>(key: string, parse: (raw: string) => T | null) {
+  let lastRaw: string | null = null;
+  let lastValue: T | null = null;
+  let primed = false;
+
+  return (): T | null => {
+    const raw = window.localStorage.getItem(key);
+    if (!primed || raw !== lastRaw) {
+      lastRaw = raw;
+      lastValue = raw === null ? null : parse(raw);
+      primed = true;
+    }
+    return lastValue;
+  };
+}
+
+const readEstimate = snapshotReader<Estimate>(ESTIMATE_KEY, (raw) => {
   try {
-    const raw = window.localStorage.getItem(ESTIMATE_KEY);
-    if (raw === null) return null;
     const parsed = estimateSchema.safeParse(JSON.parse(raw));
     return parsed.success ? (parsed.data as Estimate) : null;
   } catch {
     return null;
   }
+});
+
+const readContractFacts = snapshotReader<StoredContractFacts>(
+  CONTRACT_FACTS_KEY,
+  (raw) => {
+    try {
+      const parsed = contractFactsSchema.safeParse(JSON.parse(raw));
+      return parsed.success ? parsed.data : null;
+    } catch {
+      return null;
+    }
+  },
+);
+
+const unknownSnapshot = () => undefined;
+
+/* ── public API ─────────────────────────────────────────────────────────── */
+
+export function saveEstimate(estimate: Estimate): void {
+  window.localStorage.setItem(ESTIMATE_KEY, JSON.stringify(estimate));
 }
 
 export function saveContractFacts(facts: StoredContractFacts): void {
   window.localStorage.setItem(CONTRACT_FACTS_KEY, JSON.stringify(facts));
 }
 
-export function loadContractFacts(): StoredContractFacts | null {
-  try {
-    const raw = window.localStorage.getItem(CONTRACT_FACTS_KEY);
-    if (raw === null) return null;
-    const parsed = contractFactsSchema.safeParse(JSON.parse(raw));
-    return parsed.success ? parsed.data : null;
-  } catch {
-    return null;
-  }
+/** `undefined` while hydrating, `null` when nothing is saved. */
+export function useStoredEstimate(): Estimate | null | undefined {
+  return useSyncExternalStore(subscribe, readEstimate, unknownSnapshot);
+}
+
+/** `undefined` while hydrating, `null` when nothing is saved. */
+export function useStoredContractFacts(): StoredContractFacts | null | undefined {
+  return useSyncExternalStore(subscribe, readContractFacts, unknownSnapshot);
 }

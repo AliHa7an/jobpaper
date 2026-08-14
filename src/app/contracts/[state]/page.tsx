@@ -2,12 +2,19 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { getStateRules, STATE_IDS, type StateId } from "@engine";
+
 import {
-  formatCentsWholeDollars,
-  getStateRules,
-  STATE_IDS,
-  type StateId,
-} from "@engine";
+  AnswerBox,
+  Button,
+  FactTable,
+  LastVerified,
+  LedgerTable,
+  SourceCitation,
+  WarningStack,
+  type LedgerRow,
+} from "@/components/ui";
+import { usd } from "@/lib/format";
 
 export const dynamicParams = false;
 
@@ -42,160 +49,192 @@ export default async function StateContractPage({
 
   const alwaysCount = rules.requiredClauses.filter((c) => c.trigger === "always").length;
   const conditionalCount = rules.requiredClauses.length - alwaysCount;
-  const lastVerified = rules.citations[0]?.lastVerified ?? rules.effectiveFrom;
+  const primary = rules.citations[0];
   const otherStates = STATE_IDS.filter((s) => s !== rules.stateId);
+
+  const clauseRows: LedgerRow[] = rules.requiredClauses.map((clause) => ({
+    id: clause.id,
+    cells: {
+      clause: (
+        <span className="flex min-w-0 flex-col items-start gap-1">
+          <span className="text-ink" style={{ fontWeight: 600 }}>
+            {clause.title}
+          </span>
+          <span className="text-dim" style={{ fontWeight: 400 }}>
+            {clause.text}
+          </span>
+        </span>
+      ),
+      when: (
+        <span className="text-dim">
+          {clause.trigger === "always" ? (
+            "Every contract"
+          ) : (
+            <>
+              When <span className="num">{clause.trigger}</span>
+            </>
+          )}
+        </span>
+      ),
+      statute: (
+        <span className="num text-dim" style={{ fontSize: "var(--text-step--2)" }}>
+          {clause.statute}
+        </span>
+      ),
+    },
+  }));
 
   return (
     <article className="mx-auto max-w-3xl space-y-6">
-      <h1 className="text-3xl font-bold">
+      <h1>
         What does a {rules.stateName} home improvement contract have to include?
       </h1>
 
-      {/* AnswerBox */}
-      <p className="rounded border-l-4 border-signal bg-sheet p-4 text-lg">
-        {rules.stateName} requires {rules.requiredClauses.length} categories of contract
+      <AnswerBox>
+        {rules.stateName} requires{" "}
+        <span className="num">{rules.requiredClauses.length}</span> categories of contract
         language for home improvement work
         {rules.homeImprovementThresholdCents > 0 ? (
           <>
             {" "}
-            over{" "}
-            <span className="num">
-              {formatCentsWholeDollars(rules.homeImprovementThresholdCents)}
-            </span>
+            over <span className="num">{usd(rules.homeImprovementThresholdCents)}</span>
           </>
         ) : null}
-        : {alwaysCount} apply to every contract and {conditionalCount} trigger on job facts
-        like the down payment or total price. Each clause below cites its statute.
-      </p>
+        : <span className="num">{alwaysCount}</span> apply to every contract and{" "}
+        <span className="num">{conditionalCount}</span> trigger on job facts such as the
+        down payment or the total price.
+      </AnswerBox>
 
-      <p className="border-l-4 border-flag pl-3 text-sm font-semibold text-flag">
-        Clause language on this page is UNVERIFIED template text awaiting construction
-        attorney review. It is a starting point, not legal advice.
-      </p>
+      {primary ? (
+        <LastVerified
+          date={primary.lastVerified}
+          ruleSetVersion={rules.ruleSetVersion}
+          citation={{ label: primary.label, url: primary.url }}
+        />
+      ) : null}
 
-      {/* LastVerified */}
-      <p className="text-sm text-dim">
-        Rules verified <span className="num">{lastVerified}</span> · ruleset{" "}
-        {rules.ruleSetVersion} · {rules.citations[0]?.label}
-      </p>
+      <WarningStack
+        warnings={[
+          {
+            id: "unverified-clauses",
+            severity: "irreversible",
+            label: "Unverified wording",
+            title: (
+              <>
+                The clause language on this page is UNVERIFIED template text awaiting
+                construction attorney review.
+              </>
+            ),
+            body: (
+              <>
+                Which clauses {rules.stateName} triggers is encoded from the statutes cited
+                below; the exact wording is not yet confirmed against primary sources. Use
+                it as a starting point and have an attorney review the contract you sign.
+              </>
+            ),
+          },
+        ]}
+      />
 
-      {/* FactTable */}
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse rounded border border-rule bg-sheet text-sm">
-          <caption className="sr-only">
-            Key {rules.stateName} home improvement contract facts
-          </caption>
-          <tbody>
-            <tr className="takeoff-row">
-              <th scope="row" className="p-3 text-left font-semibold">
-                Written-contract threshold
-              </th>
-              <td className="num p-3">
-                {rules.homeImprovementThresholdCents > 0
-                  ? formatCentsWholeDollars(rules.homeImprovementThresholdCents)
-                  : "No general threshold"}
-              </td>
-            </tr>
-            <tr className="takeoff-row">
-              <th scope="row" className="p-3 text-left font-semibold">
-                Required clause categories
-              </th>
-              <td className="num p-3">{rules.requiredClauses.length}</td>
-            </tr>
-            <tr className="takeoff-row">
-              <th scope="row" className="p-3 text-left font-semibold">
-                License / registration number on contract
-              </th>
-              <td className="p-3">{rules.licenseDisplayRequired ? "Yes" : "No statewide rule"}</td>
-            </tr>
-            <tr>
-              <th scope="row" className="p-3 text-left font-semibold">
-                Prohibited terms listed
-              </th>
-              <td className="num p-3">{rules.prohibitedTerms.length}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <FactTable
+        caption={`Key ${rules.stateName} home improvement contract facts`}
+        rows={[
+          {
+            key: "Written-contract threshold",
+            value:
+              rules.homeImprovementThresholdCents > 0
+                ? usd(rules.homeImprovementThresholdCents)
+                : "No general threshold",
+          },
+          { key: "Required clause categories", value: rules.requiredClauses.length },
+          { key: "Apply to every contract", value: alwaysCount },
+          { key: "Trigger on job facts", value: conditionalCount },
+          {
+            key: "License number on the contract",
+            value: rules.licenseDisplayRequired ? "Required" : "No statewide rule",
+            mono: false,
+          },
+          { key: "Prohibited terms listed", value: rules.prohibitedTerms.length },
+        ]}
+      />
 
-      <section>
-        <h2 className="mb-3 text-xl font-bold">
-          Which clauses does {rules.stateName} require, and when?
-        </h2>
-        <ol className="space-y-3">
-          {rules.requiredClauses.map((clause) => (
-            <li key={clause.id} className="rounded border border-rule bg-sheet p-4">
-              <p className="mb-1 flex flex-wrap items-baseline justify-between gap-2 font-semibold">
-                <span>{clause.title}</span>
-                <span className="num text-xs font-normal text-dim">{clause.statute}</span>
-              </p>
-              <p className="mb-1 text-sm text-dim">
-                When it applies:{" "}
-                {clause.trigger === "always" ? "every contract" : `when ${clause.trigger}`}
-              </p>
-              <p className="text-sm">{clause.text}</p>
-            </li>
-          ))}
-        </ol>
+      <section className="space-y-3">
+        <h2>Which clauses does {rules.stateName} require, and when?</h2>
+        <LedgerTable
+          caption={`${rules.requiredClauses.length} required clause categories in ${rules.stateName}, with their triggers and statutes`}
+          columns={[
+            { id: "clause", label: "Clause" },
+            { id: "when", label: "When it applies" },
+            { id: "statute", label: "Statute" },
+          ]}
+          rows={clauseRows}
+        />
       </section>
 
-      <section>
-        <h2 className="mb-2 text-xl font-bold">
-          What can&apos;t go in a {rules.stateName} home improvement contract?
-        </h2>
-        <ul className="list-disc space-y-1 ps-5 text-sm">
-          {rules.prohibitedTerms.map((t) => (
-            <li key={t}>{t}</li>
-          ))}
-        </ul>
-      </section>
+      {rules.prohibitedTerms.length > 0 ? (
+        <section className="space-y-2">
+          <h2>What cannot go in a {rules.stateName} home improvement contract?</h2>
+          <ul className="text-dim ml-5 list-disc" style={{ fontSize: "var(--text-step--1)" }}>
+            {rules.prohibitedTerms.map((t) => (
+              <li key={t}>{t}</li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
-      <section className="rounded border border-rule bg-sheet p-4">
-        <h2 className="mb-2 text-xl font-bold">Build this contract for your job</h2>
-        <p className="mb-3 text-sm">
-          The free generator prices your job on a takeoff sheet, then assembles the{" "}
-          {rules.stateName} clauses your job facts trigger — with the statute cite on each
-          one.
+      <section
+        className="hairline-all rounded-atlas flex flex-col items-start gap-3 p-6"
+        style={{ borderRadius: "var(--radius-atlas)", background: "var(--paper-raised)" }}
+      >
+        <h2>Build this contract for your job</h2>
+        <p className="text-dim" style={{ margin: 0, maxWidth: "var(--measure)" }}>
+          Price the job on the takeoff sheet, and the generator assembles the{" "}
+          {rules.stateName} clauses your job facts trigger — each one carrying its statute.
         </p>
-        <Link
-          href="/"
-          className="btn inline-flex items-center rounded bg-signal px-4 py-2.5 font-semibold text-white"
-        >
-          Start your estimate
+        <Link href="/">
+          <Button className="touch-lg">Price a job</Button>
         </Link>
       </section>
 
-      <section>
-        <h2 className="mb-2 text-lg font-bold">Sources</h2>
-        <ul className="list-disc space-y-1 ps-5 text-sm">
-          {rules.citations.map((c) => (
+      <section className="space-y-2">
+        <h2>Sources</h2>
+        <ul className="ml-5 list-disc" style={{ fontSize: "var(--text-step--1)" }}>
+          {rules.citations.map((c, i) => (
             <li key={c.label}>
-              <a href={c.url} className="text-signal underline" rel="noopener">
+              <a href={c.url} className="underline underline-offset-4" rel="noopener">
                 {c.label}
-              </a>{" "}
-              — last verified <span className="num">{c.lastVerified}</span>
+              </a>
+              <SourceCitation
+                index={i + 1}
+                label={c.label}
+                url={c.url}
+                lastVerified={c.lastVerified}
+              />
             </li>
           ))}
         </ul>
       </section>
 
-      <nav aria-label="Related pages" className="border-t border-rule pt-4 text-sm">
-        <p className="mb-2 font-semibold">Other states &amp; related pages</p>
-        <ul className="flex flex-wrap gap-x-4 gap-y-1">
+      <nav aria-label="Related pages" className="hairline-t pt-4">
+        <p className="micro-label mb-2">Other states and related pages</p>
+        <ul
+          className="flex flex-wrap gap-x-4 gap-y-1"
+          style={{ fontSize: "var(--text-step--1)" }}
+        >
           {otherStates.map((s) => (
             <li key={s}>
-              <Link href={`/contracts/${s}`} className="text-signal underline">
-                {getStateRules(s).stateName} contract requirements
+              <Link href={`/contracts/${s}`} className="underline underline-offset-4">
+                {getStateRules(s).stateName} requirements
               </Link>
             </li>
           ))}
           <li>
-            <Link href="/contract" className="text-signal underline">
+            <Link href="/contract" className="underline underline-offset-4">
               Contract generator
             </Link>
           </li>
           <li>
-            <Link href="/pricing-methodology" className="text-signal underline">
+            <Link href="/pricing-methodology" className="underline underline-offset-4">
               Pricing methodology
             </Link>
           </li>

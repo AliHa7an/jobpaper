@@ -1,106 +1,94 @@
 import type { Metadata } from "next";
 import { Bricolage_Grotesque, IBM_Plex_Mono, Public_Sans } from "next/font/google";
-import Link from "next/link";
 
 import "./globals.css";
+import { SiteFooter } from "@/components/layout/SiteFooter";
+import { SiteHeader } from "@/components/layout/SiteHeader";
 
+/*
+ * Three faces, three roles (07-DESIGN-SYSTEM.md §3). `next/font/google`
+ * downloads at BUILD time and serves from our own origin — there is no runtime
+ * Google Fonts request, which is what the "never a CDN link" rule is protecting
+ * (CWV + privacy). Weights are pinned to only what the system actually uses;
+ * every extra weight is bytes on the critical path.
+ */
 const bricolage = Bricolage_Grotesque({
-  variable: "--font-bricolage",
   subsets: ["latin"],
+  weight: ["500", "600", "700"], // display: h1/h2 only
+  variable: "--font-bricolage",
   display: "swap",
+  preload: true,
 });
 
 const publicSans = Public_Sans({
-  variable: "--font-public-sans",
   subsets: ["latin"],
+  weight: ["400", "500", "600"], // body: prose and all UI chrome
+  variable: "--font-public-sans",
   display: "swap",
+  preload: true,
 });
 
 const plexMono = IBM_Plex_Mono({
-  variable: "--font-plex-mono",
-  weight: ["400", "500", "600"],
   subsets: ["latin"],
+  weight: ["400", "500"], // data: every number, date, code, ID
+  variable: "--font-plex-mono",
   display: "swap",
+  preload: true,
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://jobpaper.com"),
   title: {
-    default: "JobPaper — Estimate, Invoice & Contract Builder for Trades",
+    default: "Free Trades Estimate, Invoice & Contract Builder — JobPaper",
     template: "%s · JobPaper",
   },
   description:
-    "Build an itemized estimate, a matching invoice, and a state-aware contract template in five minutes. Free, no signup. Placeholder pricing clearly labeled.",
+    "Price the job on a live takeoff sheet, then get a matching invoice and a contract carrying your state's required clauses. Free, no signup. Every number cited.",
+  /*
+   * The tab icon is src/app/icon.svg, picked up by the file convention.
+   * The home-screen icon is declared by hand: iOS does not render SVG touch
+   * icons at all, and Next 16's `apple-icon` file convention accepts only
+   * .jpg/.jpeg/.png — so it is a 180×180 PNG of the same mark in public/.
+   * Declaring `icons` replaces the auto-detected set, so the tab icon is
+   * re-stated here rather than silently lost.
+   */
+  icons: {
+    icon: [{ url: "/icon.svg", type: "image/svg+xml", sizes: "any" }],
+    apple: [{ url: "/apple-icon.png", type: "image/png", sizes: "180x180" }],
+  },
 };
 
-const NAV = [
-  { href: "/", label: "Estimate" },
-  { href: "/invoice", label: "Invoice" },
-  { href: "/contract", label: "Contract" },
-  { href: "/pricing-methodology", label: "Pricing methodology" },
-] as const;
+const organizationJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "JobPaper",
+  url: "https://jobpaper.com",
+  description:
+    "A free estimate, invoice and contract engine for solo and small-crew contractors. Deterministic pricing from versioned rules; state-aware contract clauses, each cited to its statute.",
+};
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${bricolage.variable} ${publicSans.variable} ${plexMono.variable} h-full antialiased`}
+      className={`${bricolage.variable} ${publicSans.variable} ${plexMono.variable}`}
     >
-      <body className="flex min-h-full flex-col">
-        <header className="no-print border-b border-rule bg-sheet">
-          <nav
-            aria-label="Main"
-            className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-6 gap-y-1 px-4 py-3"
-          >
-            <Link href="/" className="flex items-center py-2 text-lg font-bold text-ink">
-              JobPaper
-            </Link>
-            <span className="hidden text-sm text-dim sm:inline">
-              Quote it right. Paper it right. Get paid.
-            </span>
-            <div className="ms-auto flex flex-wrap items-center gap-x-5">
-              {NAV.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="flex items-center py-2 text-sm font-medium text-signal underline-offset-4 hover:underline"
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </div>
-          </nav>
-        </header>
-
-        <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6">{children}</main>
-
-        <footer className="no-print border-t border-rule bg-sheet">
-          <div className="mx-auto max-w-5xl px-4 py-6 text-sm text-dim">
-            <p className="mb-3 max-w-3xl">
-              JobPaper generates document templates from versioned, cited rule data. It is
-              not legal advice, and v1 pricing is placeholder reference data — have an
-              attorney review contracts and check prices against your local suppliers.
-            </p>
-            <ul className="flex flex-wrap gap-x-5 gap-y-1">
-              {[
-                ["/pricing-methodology", "Pricing methodology"],
-                ["/sources", "Sources"],
-                ["/editorial-policy", "Editorial policy"],
-                ["/changelog", "Changelog"],
-                ["/about", "About"],
-                ["/contracts/CA", "State contract rules"],
-              ].map(([href, label]) => (
-                <li key={href}>
-                  <Link
-                    href={href as "/about"}
-                    className="flex items-center py-2 underline-offset-4 hover:underline"
-                  >
-                    {label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </footer>
+      <body className="flex min-h-screen flex-col antialiased">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+        />
+        <a
+          href="#main"
+          className="rounded-atlas focus:bg-ink focus:text-paper sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-3 focus:py-2"
+        >
+          Skip to the takeoff sheet
+        </a>
+        <SiteHeader />
+        <main id="main" className="mx-auto w-full max-w-6xl flex-1 px-4 py-6">
+          {children}
+        </main>
+        <SiteFooter />
       </body>
     </html>
   );
