@@ -1,0 +1,52 @@
+{
+  "stateId": "PA",
+  "stateName": "Pennsylvania",
+  "ruleSetVersion": "states-pa-2026-08",
+  "effectiveFrom": "2026-08-01",
+  "effectiveTo": null,
+  "citations": [
+    {
+      "label": "73 P.S. §517.1 et seq. — Home Improvement Consumer Protection Act (HICPA)",
+      "url": "https://www.attorneygeneral.gov/protect-yourself/home-improvement/",
+      "lastVerified": "2026-08-08"
+    }
+  ],
+  "homeImprovementThresholdCents": 50000,
+  "requiredClauses": [
+    {
+      "id": "hicpa-contract-contents",
+      "title": "HICPA contract requirements",
+      "text": "UNVERIFIED — ATTORNEY REVIEW REQUIRED. [Template] This home improvement contract is in writing, is signed by both parties, and contains the contractor's registration number, the approximate start and completion dates, a description of the work, the total sales price, and the amount of any down payment, as the Pennsylvania Home Improvement Consumer Protection Act requires for contracts over $500.",
+      "trigger": "total >= threshold",
+      "statute": "73 P.S. §517.7(a)"
+    },
+    {
+      "id": "rescission-right",
+      "title": "Three-day rescission right",
+      "text": "UNVERIFIED — ATTORNEY REVIEW REQUIRED. [Template] You, the owner, may rescind this contract without penalty within three business days of signing, except as otherwise provided by law for emergency work you have separately authorized in writing. Notice of rescission must be delivered or mailed to the contractor at the address in this contract.",
+      "trigger": "total > $500",
+      "statute": "73 P.S. §517.7(b)"
+    },
+    {
+      "id": "downpayment-cap",
+      "title": "Down payment limit",
+      "text": "UNVERIFIED — ATTORNEY REVIEW REQUIRED. [Template] For home improvement contracts over $5,000, Pennsylvania law prohibits a contractor from receiving a deposit exceeding one-third of the contract price, plus the cost of special-order materials. The down payment in this contract does not exceed that limit.",
+      "trigger": "downpayment > 33%",
+      "statute": "73 P.S. §517.7(e)"
+    },
+    {
+      "id": "registration-number",
+      "title": "Contractor registration display",
+      "text": "UNVERIFIED — ATTORNEY REVIEW REQUIRED. [Template] The contractor's Pennsylvania Home Improvement Contractor (HIC) registration number appears in this contract and in all advertising, as HICPA requires.",
+      "trigger": "always",
+      "statute": "73 P.S. §517.9"
+    }
+  ],
+  "licenseDisplayRequired": true,
+  "prohibitedTerms": [
+    "Waiver of federal, state, or local health or safety requirements",
+    "Confession of judgment clauses",
+    "Waiver of the owner's rescission rights",
+    "Clauses allowing assignment of wages"
+  ]
+}

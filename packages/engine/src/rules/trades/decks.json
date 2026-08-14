@@ -1,0 +1,160 @@
+{
+  "tradeId": "decks",
+  "label": "Decks & carpentry",
+  "ruleSetVersion": "trades-decks-2026-08",
+  "effectiveFrom": "2026-08-01",
+  "effectiveTo": null,
+  "dataBasis": "PLACEHOLDER REFERENCE DATA (Aug 2026). All unit costs and labor hours are modelled reference values pending a licensed cost-data source and sanity-check by two working contractors. Do not treat as market pricing.",
+  "citations": [
+    {
+      "label": "Placeholder pricing basis — internal reference model, pending licensed cost data (RSMeans-style) and contractor review",
+      "url": "https://example.invalid/pricing-methodology",
+      "lastVerified": "2026-08-08"
+    }
+  ],
+  "staleAfterDays": 120,
+  "laborRateCentsPerHour": 6200,
+  "laborRateBasis": "labor: regional median carpentry rate, Aug 2026 placeholder ($62/hr base before regional multiplier)",
+  "accessLaborMultipliersBps": {
+    "easy": 9000,
+    "standard": 10000,
+    "difficult": 12500
+  },
+  "regionalMultipliersBps": {
+    "northeast": 11500,
+    "southeast": 9200,
+    "midwest": 9500,
+    "south-central": 9000,
+    "mountain-west": 10500,
+    "pacific": 12500
+  },
+  "rangeBps": { "low": 9000, "high": 11800 },
+  "taughtDefaults": { "overheadBps": 1000, "profitBps": 1500 },
+  "jobTypes": [
+    {
+      "id": "new-deck",
+      "label": "New deck build",
+      "areaFrom": { "kind": "lengthWidth", "lengthField": "lengthFt", "widthField": "widthFt" },
+      "dimensionFields": [
+        { "id": "lengthFt", "label": "Deck length", "unit": "ft", "min": 4, "max": 60, "default": 16 },
+        { "id": "widthFt", "label": "Deck width", "unit": "ft", "min": 4, "max": 40, "default": 12 },
+        { "id": "railingLinearFt", "label": "Railing", "unit": "ln ft", "min": 0, "max": 200, "default": 40 },
+        { "id": "stairSteps", "label": "Stair steps", "unit": "steps", "min": 0, "max": 20, "default": 4 }
+      ],
+      "assemblies": [
+        {
+          "id": "footings",
+          "label": "Concrete footings & posts",
+          "unit": "each",
+          "qty": { "kind": "perMeasure", "measure": "area", "divisor": 20, "roundUp": true, "min": 4 },
+          "wasteFactorBps": 0,
+          "materialUnitCostCents": { "economy": 4500, "mid": 6500, "premium": 9000 },
+          "materialBasis": "materials: bagged concrete, PT 6x6 post, post base — Aug 2026 placeholder; labor: regional median placeholder",
+          "laborHoursPerUnit": 1.5,
+          "assumptions": ["One footing per 20 sq ft of deck, minimum 4", "Assumes diggable soil, no rock or roots"]
+        },
+        {
+          "id": "framing",
+          "label": "Framing: ledger, joists, beams",
+          "unit": "sq ft",
+          "qty": { "kind": "measure", "measure": "area", "factor": 1 },
+          "wasteFactorBps": 1000,
+          "materialUnitCostCents": { "economy": 450, "mid": 550, "premium": 700 },
+          "materialBasis": "materials: PT framing lumber + joist hangers, mid-grade PT, Aug 2026 placeholder; labor: regional median placeholder",
+          "laborHoursPerUnit": 0.08,
+          "assumptions": ["Joists 16\" on center", "Attached ledger; freestanding adds cost"]
+        },
+        {
+          "id": "decking",
+          "label": "Decking boards",
+          "unit": "sq ft",
+          "qty": { "kind": "measure", "measure": "area", "factor": 1 },
+          "wasteFactorBps": 1000,
+          "materialUnitCostCents": { "economy": 350, "mid": 525, "premium": 1400 },
+          "materialBasis": "materials: economy = standard PT board, mid = mid-grade PT, premium = composite, Aug 2026 placeholder; labor: regional median placeholder",
+          "laborHoursPerUnit": 0.06,
+          "assumptions": ["10% cut waste on boards"]
+        },
+        {
+          "id": "railing",
+          "label": "Railing & balusters",
+          "unit": "ln ft",
+          "qty": { "kind": "field", "field": "railingLinearFt", "factor": 1 },
+          "wasteFactorBps": 500,
+          "materialUnitCostCents": { "economy": 1800, "mid": 2800, "premium": 5500 },
+          "materialBasis": "materials: economy = PT wood rail, mid = wood + metal balusters, premium = aluminum system, Aug 2026 placeholder; labor: regional median placeholder",
+          "laborHoursPerUnit": 0.35,
+          "assumptions": ["36\" rail height; code may require 42\" over 30\" above grade"],
+          "appliesWhenFieldPositive": "railingLinearFt"
+        },
+        {
+          "id": "stairs",
+          "label": "Stairs: stringers & treads",
+          "unit": "step",
+          "qty": { "kind": "field", "field": "stairSteps", "factor": 1 },
+          "wasteFactorBps": 0,
+          "materialUnitCostCents": { "economy": 3500, "mid": 4500, "premium": 7000 },
+          "materialBasis": "materials: PT stringers + treads per step, Aug 2026 placeholder; labor: regional median placeholder",
+          "laborHoursPerUnit": 1,
+          "assumptions": ["Per-step pricing includes stringer share and handrail hardware"],
+          "appliesWhenFieldPositive": "stairSteps"
+        },
+        {
+          "id": "fasteners",
+          "label": "Fasteners & hardware",
+          "unit": "sq ft",
+          "qty": { "kind": "measure", "measure": "area", "factor": 1 },
+          "wasteFactorBps": 0,
+          "materialUnitCostCents": { "economy": 45, "mid": 55, "premium": 75 },
+          "materialBasis": "materials: coated screws, hidden fasteners at premium tier, Aug 2026 placeholder",
+          "laborHoursPerUnit": 0,
+          "assumptions": []
+        }
+      ]
+    },
+    {
+      "id": "deck-resurface",
+      "label": "Deck resurface (frame stays)",
+      "areaFrom": { "kind": "lengthWidth", "lengthField": "lengthFt", "widthField": "widthFt" },
+      "dimensionFields": [
+        { "id": "lengthFt", "label": "Deck length", "unit": "ft", "min": 4, "max": 60, "default": 16 },
+        { "id": "widthFt", "label": "Deck width", "unit": "ft", "min": 4, "max": 40, "default": 12 }
+      ],
+      "assemblies": [
+        {
+          "id": "demo-boards",
+          "label": "Remove & dispose old decking",
+          "unit": "sq ft",
+          "qty": { "kind": "measure", "measure": "area", "factor": 1 },
+          "wasteFactorBps": 0,
+          "materialUnitCostCents": { "economy": 75, "mid": 75, "premium": 75 },
+          "materialBasis": "materials: disposal/dump fees per sq ft, Aug 2026 placeholder; labor: regional median placeholder",
+          "laborHoursPerUnit": 0.025,
+          "assumptions": ["Existing frame is sound; rot repair is a change order"]
+        },
+        {
+          "id": "decking",
+          "label": "New decking boards",
+          "unit": "sq ft",
+          "qty": { "kind": "measure", "measure": "area", "factor": 1 },
+          "wasteFactorBps": 1000,
+          "materialUnitCostCents": { "economy": 350, "mid": 525, "premium": 1400 },
+          "materialBasis": "materials: economy = standard PT board, mid = mid-grade PT, premium = composite, Aug 2026 placeholder; labor: regional median placeholder",
+          "laborHoursPerUnit": 0.06,
+          "assumptions": ["10% cut waste on boards"]
+        },
+        {
+          "id": "fasteners",
+          "label": "Fasteners & hardware",
+          "unit": "sq ft",
+          "qty": { "kind": "measure", "measure": "area", "factor": 1 },
+          "wasteFactorBps": 0,
+          "materialUnitCostCents": { "economy": 45, "mid": 55, "premium": 75 },
+          "materialBasis": "materials: coated screws, hidden fasteners at premium tier, Aug 2026 placeholder",
+          "laborHoursPerUnit": 0,
+          "assumptions": []
+        }
+      ]
+    }
+  ]
+}

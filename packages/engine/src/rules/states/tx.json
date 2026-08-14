@@ -1,0 +1,55 @@
+{
+  "stateId": "TX",
+  "stateName": "Texas",
+  "ruleSetVersion": "states-tx-2026-08",
+  "effectiveFrom": "2026-08-01",
+  "effectiveTo": null,
+  "citations": [
+    {
+      "label": "Tex. Prop. Code ch. 53 (mechanic's, contractor's, or materialman's lien)",
+      "url": "https://statutes.capitol.texas.gov/Docs/PR/htm/PR.53.htm",
+      "lastVerified": "2026-08-08"
+    },
+    {
+      "label": "Tex. Bus. & Com. Code ch. 601 (home solicitation transactions)",
+      "url": "https://statutes.capitol.texas.gov/Docs/BC/htm/BC.601.htm",
+      "lastVerified": "2026-08-08"
+    }
+  ],
+  "homeImprovementThresholdCents": 0,
+  "requiredClauses": [
+    {
+      "id": "homestead-lien-notice",
+      "title": "Homestead lien disclosure",
+      "text": "UNVERIFIED — ATTORNEY REVIEW REQUIRED. [Template] NOTICE: This contract is subject to Chapter 53 of the Texas Property Code. If this property is your homestead, a contractor may not obtain a valid lien unless this contract is signed by both spouses (if married) before any work begins and is filed with the county clerk of the county where the homestead is located.",
+      "trigger": "always",
+      "statute": "Tex. Prop. Code §53.254"
+    },
+    {
+      "id": "right-to-cancel-solicitation",
+      "title": "Right to cancel (home solicitation)",
+      "text": "UNVERIFIED — ATTORNEY REVIEW REQUIRED. [Template] If this transaction was solicited or agreed to at your residence, you, the consumer, may cancel this transaction at any time prior to midnight of the third business day after the date of this transaction. See the attached notice of cancellation form for an explanation of this right.",
+      "trigger": "always",
+      "statute": "Tex. Bus. & Com. Code §601.052"
+    },
+    {
+      "id": "disclosure-no-general-license",
+      "title": "Licensing disclosure",
+      "text": "UNVERIFIED — ATTORNEY REVIEW REQUIRED. [Template] Texas does not license general residential construction contractors statewide. Trade work included in this contract that requires a state license (plumbing, electrical, HVAC) will be performed by appropriately licensed tradespeople, whose license numbers are available on request.",
+      "trigger": "always",
+      "statute": "Tex. Occ. Code (trade-specific chapters)"
+    },
+    {
+      "id": "final-bills-paid-affidavit",
+      "title": "Final payment — bills-paid affidavit",
+      "text": "UNVERIFIED — ATTORNEY REVIEW REQUIRED. [Template] At final payment, the contractor will furnish an affidavit stating that all bills for labor and materials incorporated into the improvements have been paid or will be paid from the final payment, as provided by Texas Property Code §53.259.",
+      "trigger": "total > $5,000",
+      "statute": "Tex. Prop. Code §53.259"
+    }
+  ],
+  "licenseDisplayRequired": false,
+  "prohibitedTerms": [
+    "Waiver of the consumer's cancellation rights under ch. 601",
+    "Prospective waiver of mechanic's lien rights by subcontractors (restricted under Prop. Code ch. 53)"
+  ]
+}

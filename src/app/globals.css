@@ -1,0 +1,81 @@
+@import "tailwindcss";
+
+/*
+ * JobPaper design tokens — "the takeoff sheet".
+ * Site-white paper, steel ink, safety-blue signal.
+ * Flag orange is reserved for high-stakes warnings ONLY (placeholder
+ * pricing, unverified legal templates). Never decorative.
+ */
+@theme {
+  --color-paper: #f7f7f5;
+  --color-ink: #20242a;
+  --color-signal: #155ea8;
+  --color-flag: #c25e10;
+  --color-rule: #d6d6d1;
+  --color-dim: #5a616c;
+  --color-sheet: #ffffff;
+
+  --font-display: var(--font-bricolage), system-ui, sans-serif;
+  --font-body: var(--font-public-sans), system-ui, sans-serif;
+  --font-data: var(--font-plex-mono), ui-monospace, monospace;
+
+  --radius: 3px;
+  --radius-sm: 3px;
+  --radius-md: 3px;
+  --radius-lg: 3px;
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+}
+
+/* Every number on the site: mono, tabular. Non-negotiable. */
+.num {
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+}
+
+h1 {
+  font-family: var(--font-display);
+}
+
+/* Visible focus, never outline: none */
+:focus-visible {
+  outline: 3px solid var(--color-signal);
+  outline-offset: 2px;
+}
+
+/* Ruled-sheet rows */
+.takeoff-row {
+  border-bottom: 1px solid var(--color-rule);
+}
+
+/* Big touch targets: used on phones, in trucks */
+button,
+select,
+a.btn,
+input:not([type="checkbox"]) {
+  min-height: 44px;
+}
+
+/* Print stylesheet: the on-screen sheet IS the document */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: #ffffff;
+  }
+  .print-sheet {
+    box-shadow: none !important;
+    border: none !important;
+    margin: 0 !important;
+    max-width: none !important;
+  }
+  a {
+    text-decoration: none;
+    color: inherit;
+  }
+}

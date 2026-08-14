@@ -1,0 +1,148 @@
+{
+  "tradeId": "interior-paint",
+  "label": "Interior painting",
+  "ruleSetVersion": "trades-interior-paint-2026-08",
+  "effectiveFrom": "2026-08-01",
+  "effectiveTo": null,
+  "dataBasis": "PLACEHOLDER REFERENCE DATA (Aug 2026). All unit costs and labor hours are modelled reference values pending a licensed cost-data source and sanity-check by two working contractors. Do not treat as market pricing.",
+  "citations": [
+    {
+      "label": "Placeholder pricing basis — internal reference model, pending licensed cost data and contractor review",
+      "url": "https://example.invalid/pricing-methodology",
+      "lastVerified": "2026-08-08"
+    }
+  ],
+  "staleAfterDays": 120,
+  "laborRateCentsPerHour": 5500,
+  "laborRateBasis": "labor: regional median painter rate, Aug 2026 placeholder ($55/hr base before regional multiplier)",
+  "accessLaborMultipliersBps": {
+    "easy": 9000,
+    "standard": 10000,
+    "difficult": 12000
+  },
+  "regionalMultipliersBps": {
+    "northeast": 11500,
+    "southeast": 9200,
+    "midwest": 9500,
+    "south-central": 9000,
+    "mountain-west": 10500,
+    "pacific": 12500
+  },
+  "rangeBps": { "low": 9000, "high": 11500 },
+  "taughtDefaults": { "overheadBps": 1000, "profitBps": 1500 },
+  "jobTypes": [
+    {
+      "id": "room-repaint",
+      "label": "Single room repaint",
+      "areaFrom": { "kind": "lengthWidth", "lengthField": "lengthFt", "widthField": "widthFt" },
+      "dimensionFields": [
+        { "id": "lengthFt", "label": "Room length", "unit": "ft", "min": 4, "max": 40, "default": 12 },
+        { "id": "widthFt", "label": "Room width", "unit": "ft", "min": 4, "max": 40, "default": 12 },
+        { "id": "paintCeiling", "label": "Paint ceiling (0 = no, 1 = yes)", "unit": "", "min": 0, "max": 1, "default": 1 },
+        { "id": "doorsAndWindows", "label": "Doors & window frames", "unit": "each", "min": 0, "max": 12, "default": 3 }
+      ],
+      "assemblies": [
+        {
+          "id": "prep-mask",
+          "label": "Prep, patch & masking",
+          "unit": "sq ft floor",
+          "qty": { "kind": "measure", "measure": "area", "factor": 1 },
+          "wasteFactorBps": 0,
+          "materialUnitCostCents": { "economy": 10, "mid": 14, "premium": 20 },
+          "materialBasis": "materials: plastic, tape, spackle per sq ft of floor, Aug 2026 placeholder; labor: regional median placeholder",
+          "laborHoursPerUnit": 0.012,
+          "assumptions": ["Furniture moved to center by homeowner", "Minor nail-hole patching only"]
+        },
+        {
+          "id": "walls",
+          "label": "Walls — two coats",
+          "unit": "sq ft wall",
+          "qty": { "kind": "measure", "measure": "perimeter", "factor": 8 },
+          "wasteFactorBps": 500,
+          "materialUnitCostCents": { "economy": 28, "mid": 45, "premium": 85 },
+          "materialBasis": "materials: economy = builder flat, mid = quality eggshell, premium = designer line, per sq ft at 2 coats, Aug 2026 placeholder; labor: regional median placeholder",
+          "laborHoursPerUnit": 0.011,
+          "assumptions": ["Assumes 8-ft ceilings", "Two coats over a similar color; color change may need a third"]
+        },
+        {
+          "id": "ceiling",
+          "label": "Ceiling — one coat",
+          "unit": "sq ft",
+          "qty": { "kind": "measure", "measure": "area", "factor": 1 },
+          "wasteFactorBps": 500,
+          "materialUnitCostCents": { "economy": 25, "mid": 35, "premium": 60 },
+          "materialBasis": "materials: ceiling flat per sq ft, Aug 2026 placeholder; labor: regional median placeholder",
+          "laborHoursPerUnit": 0.012,
+          "assumptions": ["Flat white; textured ceilings take longer"],
+          "appliesWhenFieldPositive": "paintCeiling"
+        },
+        {
+          "id": "trim",
+          "label": "Baseboard & trim",
+          "unit": "ln ft",
+          "qty": { "kind": "measure", "measure": "perimeter", "factor": 1 },
+          "wasteFactorBps": 0,
+          "materialUnitCostCents": { "economy": 35, "mid": 50, "premium": 90 },
+          "materialBasis": "materials: trim enamel per ln ft, Aug 2026 placeholder; labor: regional median placeholder",
+          "laborHoursPerUnit": 0.04,
+          "assumptions": ["Semi-gloss enamel, brushed"]
+        },
+        {
+          "id": "doors-windows",
+          "label": "Doors & window frames",
+          "unit": "each",
+          "qty": { "kind": "field", "field": "doorsAndWindows", "factor": 1 },
+          "wasteFactorBps": 0,
+          "materialUnitCostCents": { "economy": 900, "mid": 1400, "premium": 2200 },
+          "materialBasis": "materials: enamel + supplies per opening, Aug 2026 placeholder; labor: regional median placeholder",
+          "laborHoursPerUnit": 0.75,
+          "assumptions": ["Both faces of doors, frames included"],
+          "appliesWhenFieldPositive": "doorsAndWindows"
+        }
+      ]
+    },
+    {
+      "id": "whole-interior",
+      "label": "Whole interior repaint",
+      "areaFrom": { "kind": "direct", "field": "floorAreaSqFt" },
+      "dimensionFields": [
+        { "id": "floorAreaSqFt", "label": "Home floor area", "unit": "sq ft", "min": 400, "max": 6000, "default": 1600 }
+      ],
+      "assemblies": [
+        {
+          "id": "prep-mask",
+          "label": "Prep, patch & masking",
+          "unit": "sq ft floor",
+          "qty": { "kind": "measure", "measure": "area", "factor": 1 },
+          "wasteFactorBps": 0,
+          "materialUnitCostCents": { "economy": 8, "mid": 12, "premium": 18 },
+          "materialBasis": "materials: plastic, tape, spackle per sq ft of floor, Aug 2026 placeholder; labor: regional median placeholder",
+          "laborHoursPerUnit": 0.008,
+          "assumptions": ["Occupied home; rooms cleared one at a time"]
+        },
+        {
+          "id": "walls-ceilings",
+          "label": "Walls & ceilings — two coats",
+          "unit": "sq ft paintable",
+          "qty": { "kind": "measure", "measure": "area", "factor": 2.7 },
+          "wasteFactorBps": 500,
+          "materialUnitCostCents": { "economy": 26, "mid": 42, "premium": 80 },
+          "materialBasis": "materials: wall + ceiling paint per paintable sq ft (2.7x floor area rule of thumb), Aug 2026 placeholder; labor: regional median placeholder",
+          "laborHoursPerUnit": 0.01,
+          "assumptions": ["Paintable area estimated at 2.7x floor area, 8-ft ceilings", "Single wall color throughout; per-room colors add time"]
+        },
+        {
+          "id": "trim-doors",
+          "label": "Trim, doors & frames",
+          "unit": "sq ft floor",
+          "qty": { "kind": "measure", "measure": "area", "factor": 1 },
+          "wasteFactorBps": 0,
+          "materialUnitCostCents": { "economy": 12, "mid": 18, "premium": 30 },
+          "materialBasis": "materials: trim enamel allocated per sq ft of floor, Aug 2026 placeholder; labor: regional median placeholder",
+          "laborHoursPerUnit": 0.006,
+          "assumptions": ["Standard trim package; heavy millwork priced separately"]
+        }
+      ]
+    }
+  ]
+}

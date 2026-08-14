@@ -1,0 +1,63 @@
+{
+  "stateId": "CA",
+  "stateName": "California",
+  "ruleSetVersion": "states-ca-2026-08",
+  "effectiveFrom": "2026-08-01",
+  "effectiveTo": null,
+  "citations": [
+    {
+      "label": "CA Bus. & Prof. Code §7159 (home improvement contracts)",
+      "url": "https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?lawCode=BPC&sectionNum=7159",
+      "lastVerified": "2026-08-08"
+    },
+    {
+      "label": "Contractors State License Board — contract requirements overview",
+      "url": "https://www.cslb.ca.gov/",
+      "lastVerified": "2026-08-08"
+    }
+  ],
+  "homeImprovementThresholdCents": 50000,
+  "requiredClauses": [
+    {
+      "id": "written-contract",
+      "title": "Written contract required",
+      "text": "UNVERIFIED — ATTORNEY REVIEW REQUIRED. [Template] This agreement for home improvement work over $500 is set out in writing and signed by both parties before any work begins, as California law requires. The contract price is stated on the face of this agreement, and no work outside this scope will be performed without a signed change order.",
+      "trigger": "total >= threshold",
+      "statute": "Bus. & Prof. Code §7159(c)"
+    },
+    {
+      "id": "right-to-cancel",
+      "title": "Three-day right to cancel",
+      "text": "UNVERIFIED — ATTORNEY REVIEW REQUIRED. [Template] You, the buyer, have the right to cancel this contract within three business days after signing (five business days if you are 65 or older). To cancel, deliver or mail a signed and dated notice of cancellation to the contractor's address stated in this contract before midnight of the third (or fifth) business day.",
+      "trigger": "always",
+      "statute": "Bus. & Prof. Code §7159(e); Civ. Code §1689.6"
+    },
+    {
+      "id": "downpayment-cap",
+      "title": "Down payment limit notice",
+      "text": "UNVERIFIED — ATTORNEY REVIEW REQUIRED. [Template] California law limits the down payment on a home improvement contract to $1,000 or 10 percent of the contract price, whichever is less. The down payment stated in this contract may not exceed that amount, and the contractor may not collect payment for work not yet performed or materials not yet delivered.",
+      "trigger": "downpayment > min($1000, 10%)",
+      "statute": "Bus. & Prof. Code §7159(d)(8)"
+    },
+    {
+      "id": "mechanics-lien-warning",
+      "title": "Mechanics lien warning",
+      "text": "UNVERIFIED — ATTORNEY REVIEW REQUIRED. [Template] MECHANICS LIEN WARNING: Anyone who helps improve your property, but who is not paid, may record what is called a mechanics lien on your property. A mechanics lien is a claim, like a mortgage or home equity loan, made against your property and recorded with the county recorder. Even if you pay your contractor in full, unpaid subcontractors, suppliers, and laborers who helped improve your property may record mechanics liens.",
+      "trigger": "always",
+      "statute": "Bus. & Prof. Code §7159(e)"
+    },
+    {
+      "id": "cslb-notice",
+      "title": "CSLB information notice",
+      "text": "UNVERIFIED — ATTORNEY REVIEW REQUIRED. [Template] Contractors are required by law to be licensed and regulated by the Contractors State License Board, which has jurisdiction to investigate complaints against contractors. Any questions concerning a contractor may be referred to the Registrar, Contractors State License Board, P.O. Box 26000, Sacramento, CA 95826.",
+      "trigger": "always",
+      "statute": "Bus. & Prof. Code §7159(e)"
+    }
+  ],
+  "licenseDisplayRequired": true,
+  "prohibitedTerms": [
+    "Any waiver of the buyer's right to cancel",
+    "Confession of judgment or waiver of legal rights",
+    "Payment schedule that exceeds the value of work performed and materials delivered"
+  ]
+}

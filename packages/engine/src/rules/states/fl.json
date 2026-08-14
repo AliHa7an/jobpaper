@@ -1,0 +1,48 @@
+{
+  "stateId": "FL",
+  "stateName": "Florida",
+  "ruleSetVersion": "states-fl-2026-08",
+  "effectiveFrom": "2026-08-01",
+  "effectiveTo": null,
+  "citations": [
+    {
+      "label": "Fla. Stat. §713.015 (mandatory lien-law notice in direct contracts)",
+      "url": "https://www.flsenate.gov/Laws/Statutes/2025/713.015",
+      "lastVerified": "2026-08-08"
+    },
+    {
+      "label": "Fla. Stat. §489.1425 (construction recovery fund notice)",
+      "url": "https://www.flsenate.gov/Laws/Statutes/2025/489.1425",
+      "lastVerified": "2026-08-08"
+    }
+  ],
+  "homeImprovementThresholdCents": 250000,
+  "requiredClauses": [
+    {
+      "id": "lien-law-notice",
+      "title": "Construction lien law notice",
+      "text": "UNVERIFIED — ATTORNEY REVIEW REQUIRED. [Template] ACCORDING TO FLORIDA'S CONSTRUCTION LIEN LAW (SECTIONS 713.001–713.37, FLORIDA STATUTES), THOSE WHO WORK ON YOUR PROPERTY OR PROVIDE MATERIALS AND SERVICES AND ARE NOT PAID IN FULL HAVE A RIGHT TO ENFORCE THEIR CLAIM FOR PAYMENT AGAINST YOUR PROPERTY. THIS CLAIM IS KNOWN AS A CONSTRUCTION LIEN. IF YOUR CONTRACTOR OR A SUBCONTRACTOR FAILS TO PAY SUBCONTRACTORS, SUB-SUBCONTRACTORS, OR MATERIAL SUPPLIERS, THOSE PEOPLE WHO ARE OWED MONEY MAY LOOK TO YOUR PROPERTY FOR PAYMENT, EVEN IF YOU HAVE ALREADY PAID YOUR CONTRACTOR IN FULL.",
+      "trigger": "total >= threshold",
+      "statute": "Fla. Stat. §713.015"
+    },
+    {
+      "id": "recovery-fund-notice",
+      "title": "Construction recovery fund notice",
+      "text": "UNVERIFIED — ATTORNEY REVIEW REQUIRED. [Template] FLORIDA HOMEOWNERS' CONSTRUCTION RECOVERY FUND: PAYMENT, UP TO A LIMITED AMOUNT, MAY BE AVAILABLE FROM THE FLORIDA HOMEOWNERS' CONSTRUCTION RECOVERY FUND IF YOU LOSE MONEY ON A PROJECT PERFORMED UNDER CONTRACT, WHERE THE LOSS RESULTS FROM SPECIFIED VIOLATIONS OF FLORIDA LAW BY A LICENSED CONTRACTOR. FOR INFORMATION ABOUT THE RECOVERY FUND AND FILING A CLAIM, CONTACT THE FLORIDA CONSTRUCTION INDUSTRY LICENSING BOARD.",
+      "trigger": "total > $2,500",
+      "statute": "Fla. Stat. §489.1425"
+    },
+    {
+      "id": "license-number",
+      "title": "Contractor license identification",
+      "text": "UNVERIFIED — ATTORNEY REVIEW REQUIRED. [Template] The contractor's state certification or registration number appears on the first page of this contract and in all advertising, as required by Florida law.",
+      "trigger": "always",
+      "statute": "Fla. Stat. §489.119(5)"
+    }
+  ],
+  "licenseDisplayRequired": true,
+  "prohibitedTerms": [
+    "Advance waiver of the owner's lien-law notices",
+    "Terms purporting to waive the contractor's licensing obligations"
+  ]
+}

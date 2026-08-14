@@ -1,0 +1,138 @@
+{
+  "tradeId": "bathroom-remodel",
+  "label": "Bathroom remodel",
+  "ruleSetVersion": "trades-bathroom-remodel-2026-08",
+  "effectiveFrom": "2026-08-01",
+  "effectiveTo": null,
+  "dataBasis": "PLACEHOLDER REFERENCE DATA (Aug 2026). All unit costs and labor hours are modelled reference values pending a licensed cost-data source and sanity-check by two working contractors. Do not treat as market pricing.",
+  "citations": [
+    {
+      "label": "Placeholder pricing basis — internal reference model, pending licensed cost data and contractor review",
+      "url": "https://example.invalid/pricing-methodology",
+      "lastVerified": "2026-08-08"
+    }
+  ],
+  "staleAfterDays": 120,
+  "laborRateCentsPerHour": 6800,
+  "laborRateBasis": "labor: regional median remodel-trades blended rate, Aug 2026 placeholder ($68/hr base before regional multiplier)",
+  "accessLaborMultipliersBps": {
+    "easy": 9500,
+    "standard": 10000,
+    "difficult": 12000
+  },
+  "regionalMultipliersBps": {
+    "northeast": 11500,
+    "southeast": 9200,
+    "midwest": 9500,
+    "south-central": 9000,
+    "mountain-west": 10500,
+    "pacific": 12500
+  },
+  "rangeBps": { "low": 8800, "high": 12200 },
+  "taughtDefaults": { "overheadBps": 1200, "profitBps": 1800 },
+  "jobTypes": [
+    {
+      "id": "full-remodel",
+      "label": "Full bathroom remodel",
+      "areaFrom": { "kind": "lengthWidth", "lengthField": "lengthFt", "widthField": "widthFt" },
+      "dimensionFields": [
+        { "id": "lengthFt", "label": "Bathroom length", "unit": "ft", "min": 4, "max": 20, "default": 8 },
+        { "id": "widthFt", "label": "Bathroom width", "unit": "ft", "min": 3, "max": 16, "default": 5 },
+        { "id": "showerTileSqFt", "label": "Shower/tub wall tile", "unit": "sq ft", "min": 0, "max": 200, "default": 60 },
+        { "id": "replaceTubShower", "label": "Replace tub/shower unit (0 = no, 1 = yes)", "unit": "", "min": 0, "max": 1, "default": 1 }
+      ],
+      "assemblies": [
+        {
+          "id": "demo",
+          "label": "Demolition & disposal",
+          "unit": "sq ft",
+          "qty": { "kind": "measure", "measure": "area", "factor": 1 },
+          "wasteFactorBps": 0,
+          "materialUnitCostCents": { "economy": 1500, "mid": 1500, "premium": 1500 },
+          "materialBasis": "materials: dumpster + disposal fees per sq ft, Aug 2026 placeholder; labor: regional median placeholder",
+          "laborHoursPerUnit": 0.3,
+          "assumptions": ["Down to studs on wet walls only", "No hazardous material abatement included"]
+        },
+        {
+          "id": "plumbing-rough",
+          "label": "Plumbing rough-in & finish",
+          "unit": "bath",
+          "qty": { "kind": "fixed", "value": 1 },
+          "wasteFactorBps": 0,
+          "materialUnitCostCents": { "economy": 85000, "mid": 120000, "premium": 180000 },
+          "materialBasis": "materials: supply/waste lines, valves, finish plumbing per bath, Aug 2026 placeholder; labor: regional median placeholder",
+          "laborHoursPerUnit": 16,
+          "assumptions": ["Fixtures stay in current locations; moving drains is a change order"]
+        },
+        {
+          "id": "electrical",
+          "label": "Electrical: GFCI, fan, lighting",
+          "unit": "bath",
+          "qty": { "kind": "fixed", "value": 1 },
+          "wasteFactorBps": 0,
+          "materialUnitCostCents": { "economy": 35000, "mid": 50000, "premium": 80000 },
+          "materialBasis": "materials: GFCI circuits, exhaust fan, fixtures per bath, Aug 2026 placeholder; labor: regional median placeholder",
+          "laborHoursPerUnit": 8,
+          "assumptions": ["Panel has capacity for a new circuit"]
+        },
+        {
+          "id": "tile-floor",
+          "label": "Floor tile & underlayment",
+          "unit": "sq ft",
+          "qty": { "kind": "measure", "measure": "area", "factor": 1 },
+          "wasteFactorBps": 1000,
+          "materialUnitCostCents": { "economy": 600, "mid": 1100, "premium": 2500 },
+          "materialBasis": "materials: economy = ceramic, mid = porcelain, premium = natural stone, incl. backer + setting materials, Aug 2026 placeholder; labor: regional median placeholder",
+          "laborHoursPerUnit": 0.25,
+          "assumptions": ["Subfloor is sound; leveling or joist repair is a change order"]
+        },
+        {
+          "id": "tile-shower",
+          "label": "Shower/tub wall tile",
+          "unit": "sq ft",
+          "qty": { "kind": "field", "field": "showerTileSqFt", "factor": 1 },
+          "wasteFactorBps": 1000,
+          "materialUnitCostCents": { "economy": 700, "mid": 1200, "premium": 2800 },
+          "materialBasis": "materials: wall tile incl. waterproofing membrane + setting materials, Aug 2026 placeholder; labor: regional median placeholder",
+          "laborHoursPerUnit": 0.3,
+          "assumptions": ["Includes waterproofing to code"],
+          "appliesWhenFieldPositive": "showerTileSqFt"
+        },
+        {
+          "id": "tub-shower-unit",
+          "label": "Tub / shower unit",
+          "unit": "each",
+          "qty": { "kind": "fixed", "value": 1 },
+          "wasteFactorBps": 0,
+          "materialUnitCostCents": { "economy": 40000, "mid": 90000, "premium": 200000 },
+          "materialBasis": "materials: economy = acrylic tub, mid = quality tub or shower base + door, premium = custom base + frameless glass, Aug 2026 placeholder; labor: regional median placeholder",
+          "laborHoursPerUnit": 12,
+          "assumptions": ["Standard 60\" alcove footprint"],
+          "appliesWhenFieldPositive": "replaceTubShower"
+        },
+        {
+          "id": "vanity-fixtures",
+          "label": "Vanity, toilet & finish fixtures",
+          "unit": "set",
+          "qty": { "kind": "fixed", "value": 1 },
+          "wasteFactorBps": 0,
+          "materialUnitCostCents": { "economy": 60000, "mid": 120000, "premium": 250000 },
+          "materialBasis": "materials: vanity + top, toilet, faucet, mirror, accessories, Aug 2026 placeholder; labor: regional median placeholder",
+          "laborHoursPerUnit": 10,
+          "assumptions": ["Stock vanity sizes; custom cabinetry priced separately"]
+        },
+        {
+          "id": "drywall-paint",
+          "label": "Drywall repair & paint",
+          "unit": "sq ft wall",
+          "qty": { "kind": "measure", "measure": "area", "factor": 2.5 },
+          "wasteFactorBps": 0,
+          "materialUnitCostCents": { "economy": 90, "mid": 120, "premium": 180 },
+          "materialBasis": "materials: moisture-resistant board, mud, bath paint per sq ft of wall (2.5x floor area rule of thumb), Aug 2026 placeholder; labor: regional median placeholder",
+          "laborHoursPerUnit": 0.03,
+          "assumptions": ["Wall area estimated at 2.5x floor area"]
+        }
+      ]
+    }
+  ]
+}
