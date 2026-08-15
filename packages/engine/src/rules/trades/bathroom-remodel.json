@@ -4,6 +4,27 @@
   "ruleSetVersion": "trades-bathroom-remodel-2026-08",
   "effectiveFrom": "2026-08-01",
   "effectiveTo": null,
+  "_verificationNote": {
+    "lastPass": "2026-08-15",
+    "status": "UNRESOLVED — COMMERCIALLY LICENSED DATA PENDING. See /VERIFICATION-STATUS.md. No values changed in this pass.",
+    "scope": "Individual prices were deliberately NOT checked against retail sites: retail listings are not a primary source and are too volatile to cite. EVERY unit cost, labour-hour figure, labour rate, waste factor, regional multiplier and range spread in this file remains placeholder reference data.",
+    "thisFile": "laborRateCentsPerHour 6800 ($68/hr) — 'blended remodel-trades rate, Aug 2026 placeholder'",
+    "authoritativeBasis": {
+      "materialsAndAssemblies": "No free primary source exists at the required granularity — this is a PURCHASE, not a research task. RSMeans (Gordian), the reference standard for unit costs, crew composition, labour-hours per assembly and city cost indexes: https://www.rsmeans.com/ . Lower-cost alternative with a published annual edition: Craftsman National Construction Estimator, https://www.craftsman-book.com/ . BOTH ARE LICENSED PRODUCTS whose figures may not be redistributed as raw data — resolve the licensing question BEFORE building an ingestion path.",
+      "labour": "BLS Occupational Employment and Wage Statistics (OEWS) is the authoritative, free, citable basis for regional labour rates. Home: https://www.bls.gov/oes/ . National estimates: https://www.bls.gov/oes/current/oes_nat.htm . State and metro tables: https://www.bls.gov/oes/tables.htm . For this trade use SOC a WEIGHTED BASKET (47-2031 Carpenters, 47-2152 Plumbers/Pipefitters/Steamfitters, 47-2111 Electricians, 47-2044 Tile and Stone Setters) — a 'blended remodel-trades rate' has no single OEWS analogue and the weights must be documented.",
+      "bls_NOT_captured": "NO BLS WAGE FIGURES WERE CAPTURED in the 2026-08-15 pass. www.bls.gov returned HTTP 403 on every path attempted, via both the fetch tool and curl with a browser user-agent — the site is bot-blocking that environment. No median or mean hourly wage is recorded here, because recording one without having fetched it is the exact failure this pass exists to prevent. Retrieve from a different network or via the BLS public API with VERIFIED series IDs. OEWS is a MAY-REFERENCE ANNUAL SERIES — record the release year alongside every figure.",
+      "oewsIsNotABillableRate": "OEWS reports EMPLOYEE WAGES, not BILLABLE CONTRACTOR RATES. The gap between them (payroll burden, insurance, overhead, profit) is a multiplier currently folded into taughtDefaults. Document that relationship explicitly when real data lands, or the labour side will be wrong by a large and consistent factor while looking rigorously sourced."
+    },
+    "unresolvedFields": {
+      "citations[0].url": "https://example.invalid/pricing-methodology — deliberate placeholder; '.invalid' is a reserved TLD and will never resolve. Replace when a licensed source lands.",
+      "laborRateCentsPerHour": "Unsourced placeholder. See authoritativeBasis.labour.",
+      "regionalMultipliersBps": "Unsourced. IDENTICAL VALUES IN ALL THREE TRADE FILES, which is itself a tell that they are modelled rather than measured — regional cost spread differs by trade. Basis would be OEWS state/metro wage data for the labour component plus a licensed city-cost-index for materials.",
+      "accessLaborMultipliersBps / rangeBps / taughtDefaults": "Judgement parameters with NO public authoritative source. These will never be citable and should be labelled as TAUGHT DEFAULTS rather than sourced data. They are what the two-working-contractor sanity check in VERIFICATION-NEEDED exists to validate.",
+      "assemblies[].* unit costs and labour hours": "All marked 'Aug 2026 placeholder' in each line-item basis. Unsourced."
+    },
+    "stalenessWarning": "staleAfterDays is 120 from effectiveFrom 2026-08-01, so this dataset is ALREADY PAST ITS OWN STALENESS WINDOW as of the 2026-08-15 pass horizon. Confirm the staleness flag is actually firing in the UI.",
+    "recheckCadence": "Re-price on every licensed-data release (RSMeans is annual with quarterly updates); re-pull OEWS annually each spring."
+  },
   "dataBasis": "PLACEHOLDER REFERENCE DATA (Aug 2026). All unit costs and labor hours are modelled reference values pending a licensed cost-data source and sanity-check by two working contractors. Do not treat as market pricing.",
   "citations": [
     {
@@ -28,109 +49,224 @@
     "mountain-west": 10500,
     "pacific": 12500
   },
-  "rangeBps": { "low": 8800, "high": 12200 },
-  "taughtDefaults": { "overheadBps": 1200, "profitBps": 1800 },
+  "rangeBps": {
+    "low": 8800,
+    "high": 12200
+  },
+  "taughtDefaults": {
+    "overheadBps": 1200,
+    "profitBps": 1800
+  },
   "jobTypes": [
     {
       "id": "full-remodel",
       "label": "Full bathroom remodel",
-      "areaFrom": { "kind": "lengthWidth", "lengthField": "lengthFt", "widthField": "widthFt" },
+      "areaFrom": {
+        "kind": "lengthWidth",
+        "lengthField": "lengthFt",
+        "widthField": "widthFt"
+      },
       "dimensionFields": [
-        { "id": "lengthFt", "label": "Bathroom length", "unit": "ft", "min": 4, "max": 20, "default": 8 },
-        { "id": "widthFt", "label": "Bathroom width", "unit": "ft", "min": 3, "max": 16, "default": 5 },
-        { "id": "showerTileSqFt", "label": "Shower/tub wall tile", "unit": "sq ft", "min": 0, "max": 200, "default": 60 },
-        { "id": "replaceTubShower", "label": "Replace tub/shower unit (0 = no, 1 = yes)", "unit": "", "min": 0, "max": 1, "default": 1 }
+        {
+          "id": "lengthFt",
+          "label": "Bathroom length",
+          "unit": "ft",
+          "min": 4,
+          "max": 20,
+          "default": 8
+        },
+        {
+          "id": "widthFt",
+          "label": "Bathroom width",
+          "unit": "ft",
+          "min": 3,
+          "max": 16,
+          "default": 5
+        },
+        {
+          "id": "showerTileSqFt",
+          "label": "Shower/tub wall tile",
+          "unit": "sq ft",
+          "min": 0,
+          "max": 200,
+          "default": 60
+        },
+        {
+          "id": "replaceTubShower",
+          "label": "Replace tub/shower unit (0 = no, 1 = yes)",
+          "unit": "",
+          "min": 0,
+          "max": 1,
+          "default": 1
+        }
       ],
       "assemblies": [
         {
           "id": "demo",
           "label": "Demolition & disposal",
           "unit": "sq ft",
-          "qty": { "kind": "measure", "measure": "area", "factor": 1 },
+          "qty": {
+            "kind": "measure",
+            "measure": "area",
+            "factor": 1
+          },
           "wasteFactorBps": 0,
-          "materialUnitCostCents": { "economy": 1500, "mid": 1500, "premium": 1500 },
+          "materialUnitCostCents": {
+            "economy": 1500,
+            "mid": 1500,
+            "premium": 1500
+          },
           "materialBasis": "materials: dumpster + disposal fees per sq ft, Aug 2026 placeholder; labor: regional median placeholder",
           "laborHoursPerUnit": 0.3,
-          "assumptions": ["Down to studs on wet walls only", "No hazardous material abatement included"]
+          "assumptions": [
+            "Down to studs on wet walls only",
+            "No hazardous material abatement included"
+          ]
         },
         {
           "id": "plumbing-rough",
           "label": "Plumbing rough-in & finish",
           "unit": "bath",
-          "qty": { "kind": "fixed", "value": 1 },
+          "qty": {
+            "kind": "fixed",
+            "value": 1
+          },
           "wasteFactorBps": 0,
-          "materialUnitCostCents": { "economy": 85000, "mid": 120000, "premium": 180000 },
+          "materialUnitCostCents": {
+            "economy": 85000,
+            "mid": 120000,
+            "premium": 180000
+          },
           "materialBasis": "materials: supply/waste lines, valves, finish plumbing per bath, Aug 2026 placeholder; labor: regional median placeholder",
           "laborHoursPerUnit": 16,
-          "assumptions": ["Fixtures stay in current locations; moving drains is a change order"]
+          "assumptions": [
+            "Fixtures stay in current locations; moving drains is a change order"
+          ]
         },
         {
           "id": "electrical",
           "label": "Electrical: GFCI, fan, lighting",
           "unit": "bath",
-          "qty": { "kind": "fixed", "value": 1 },
+          "qty": {
+            "kind": "fixed",
+            "value": 1
+          },
           "wasteFactorBps": 0,
-          "materialUnitCostCents": { "economy": 35000, "mid": 50000, "premium": 80000 },
+          "materialUnitCostCents": {
+            "economy": 35000,
+            "mid": 50000,
+            "premium": 80000
+          },
           "materialBasis": "materials: GFCI circuits, exhaust fan, fixtures per bath, Aug 2026 placeholder; labor: regional median placeholder",
           "laborHoursPerUnit": 8,
-          "assumptions": ["Panel has capacity for a new circuit"]
+          "assumptions": [
+            "Panel has capacity for a new circuit"
+          ]
         },
         {
           "id": "tile-floor",
           "label": "Floor tile & underlayment",
           "unit": "sq ft",
-          "qty": { "kind": "measure", "measure": "area", "factor": 1 },
+          "qty": {
+            "kind": "measure",
+            "measure": "area",
+            "factor": 1
+          },
           "wasteFactorBps": 1000,
-          "materialUnitCostCents": { "economy": 600, "mid": 1100, "premium": 2500 },
+          "materialUnitCostCents": {
+            "economy": 600,
+            "mid": 1100,
+            "premium": 2500
+          },
           "materialBasis": "materials: economy = ceramic, mid = porcelain, premium = natural stone, incl. backer + setting materials, Aug 2026 placeholder; labor: regional median placeholder",
           "laborHoursPerUnit": 0.25,
-          "assumptions": ["Subfloor is sound; leveling or joist repair is a change order"]
+          "assumptions": [
+            "Subfloor is sound; leveling or joist repair is a change order"
+          ]
         },
         {
           "id": "tile-shower",
           "label": "Shower/tub wall tile",
           "unit": "sq ft",
-          "qty": { "kind": "field", "field": "showerTileSqFt", "factor": 1 },
+          "qty": {
+            "kind": "field",
+            "field": "showerTileSqFt",
+            "factor": 1
+          },
           "wasteFactorBps": 1000,
-          "materialUnitCostCents": { "economy": 700, "mid": 1200, "premium": 2800 },
+          "materialUnitCostCents": {
+            "economy": 700,
+            "mid": 1200,
+            "premium": 2800
+          },
           "materialBasis": "materials: wall tile incl. waterproofing membrane + setting materials, Aug 2026 placeholder; labor: regional median placeholder",
           "laborHoursPerUnit": 0.3,
-          "assumptions": ["Includes waterproofing to code"],
+          "assumptions": [
+            "Includes waterproofing to code"
+          ],
           "appliesWhenFieldPositive": "showerTileSqFt"
         },
         {
           "id": "tub-shower-unit",
           "label": "Tub / shower unit",
           "unit": "each",
-          "qty": { "kind": "fixed", "value": 1 },
+          "qty": {
+            "kind": "fixed",
+            "value": 1
+          },
           "wasteFactorBps": 0,
-          "materialUnitCostCents": { "economy": 40000, "mid": 90000, "premium": 200000 },
+          "materialUnitCostCents": {
+            "economy": 40000,
+            "mid": 90000,
+            "premium": 200000
+          },
           "materialBasis": "materials: economy = acrylic tub, mid = quality tub or shower base + door, premium = custom base + frameless glass, Aug 2026 placeholder; labor: regional median placeholder",
           "laborHoursPerUnit": 12,
-          "assumptions": ["Standard 60\" alcove footprint"],
+          "assumptions": [
+            "Standard 60\" alcove footprint"
+          ],
           "appliesWhenFieldPositive": "replaceTubShower"
         },
         {
           "id": "vanity-fixtures",
           "label": "Vanity, toilet & finish fixtures",
           "unit": "set",
-          "qty": { "kind": "fixed", "value": 1 },
+          "qty": {
+            "kind": "fixed",
+            "value": 1
+          },
           "wasteFactorBps": 0,
-          "materialUnitCostCents": { "economy": 60000, "mid": 120000, "premium": 250000 },
+          "materialUnitCostCents": {
+            "economy": 60000,
+            "mid": 120000,
+            "premium": 250000
+          },
           "materialBasis": "materials: vanity + top, toilet, faucet, mirror, accessories, Aug 2026 placeholder; labor: regional median placeholder",
           "laborHoursPerUnit": 10,
-          "assumptions": ["Stock vanity sizes; custom cabinetry priced separately"]
+          "assumptions": [
+            "Stock vanity sizes; custom cabinetry priced separately"
+          ]
         },
         {
           "id": "drywall-paint",
           "label": "Drywall repair & paint",
           "unit": "sq ft wall",
-          "qty": { "kind": "measure", "measure": "area", "factor": 2.5 },
+          "qty": {
+            "kind": "measure",
+            "measure": "area",
+            "factor": 2.5
+          },
           "wasteFactorBps": 0,
-          "materialUnitCostCents": { "economy": 90, "mid": 120, "premium": 180 },
+          "materialUnitCostCents": {
+            "economy": 90,
+            "mid": 120,
+            "premium": 180
+          },
           "materialBasis": "materials: moisture-resistant board, mud, bath paint per sq ft of wall (2.5x floor area rule of thumb), Aug 2026 placeholder; labor: regional median placeholder",
           "laborHoursPerUnit": 0.03,
-          "assumptions": ["Wall area estimated at 2.5x floor area"]
+          "assumptions": [
+            "Wall area estimated at 2.5x floor area"
+          ]
         }
       ]
     }

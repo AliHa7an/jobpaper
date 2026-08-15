@@ -82,11 +82,17 @@ export default function InvoiceView() {
       id: "placeholder-pricing",
       severity: "irreversible",
       label: "Unverified pricing",
-      title: <>The amounts below came from placeholder reference pricing.</>,
+      title: (
+        <>
+          The amounts below are an estimate only — not a binding quote — and came from
+          placeholder reference pricing.
+        </>
+      ),
       body: (
         <>
-          An invoice is a demand for a specific number. Confirm every line against what the
-          job actually cost you before you send it.
+          An invoice is a demand for a specific number, so it is the one document where an
+          estimate does not belong. Confirm every line against what the job actually cost
+          you before you send it.
         </>
       ),
     },
@@ -235,7 +241,8 @@ export default function InvoiceView() {
           <p style={{ maxWidth: "var(--measure)" }}>
             Built from estimate ruleset{" "}
             <span className="num">{invoice.ruleSetVersion}</span>. Prices carried over from
-            the takeoff sheet are placeholder reference data, not market quotes.
+            the takeoff sheet are placeholder reference data — an estimate only, not a
+            binding quote.
           </p>
           <div className="no-print mt-2">
             <TraceDisclosure

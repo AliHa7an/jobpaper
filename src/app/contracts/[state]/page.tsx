@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { getStateRules, STATE_IDS, type StateId } from "@engine";
+import { getStateRules, STATE_IDS, untranscribedClauses, type StateId } from "@engine";
 
 import {
   AnswerBox,
@@ -51,6 +51,7 @@ export default async function StateContractPage({
   const conditionalCount = rules.requiredClauses.length - alwaysCount;
   const primary = rules.citations[0];
   const otherStates = STATE_IDS.filter((s) => s !== rules.stateId);
+  const blockers = untranscribedClauses(rules);
 
   const clauseRows: LedgerRow[] = rules.requiredClauses.map((clause) => ({
     id: clause.id,
@@ -60,9 +61,31 @@ export default async function StateContractPage({
           <span className="text-ink" style={{ fontWeight: 600 }}>
             {clause.title}
           </span>
-          <span className="text-dim" style={{ fontWeight: 400 }}>
-            {clause.text}
-          </span>
+          {/* Prescribed wording is shown by linking to the statute, never by
+              paraphrasing it here. A summary on this page would be quoted back
+              at us as though it were the notice. */}
+          {clause.textStatus === "DRAFTED" ? (
+            <span className="text-dim" style={{ fontWeight: 400 }}>
+              {clause.text}
+            </span>
+          ) : (
+            <span className="text-dim" style={{ fontWeight: 400 }}>
+              {clause.textStatus === "VERBATIM_REQUIRED_NOT_TRANSCRIBED"
+                ? "The statute prescribes this notice word-for-word."
+                : "The statute prescribes a form this notice must read substantially similar to."}{" "}
+              JobPaper does not reproduce it until it has been transcribed from the statute,
+              so no contract is generated for {rules.stateName}.{" "}
+              {clause.sourceUrl ? (
+                <a
+                  href={clause.sourceUrl}
+                  rel="noopener"
+                  className="underline underline-offset-4"
+                >
+                  Read the statutory text
+                </a>
+              ) : null}
+            </span>
+          )}
         </span>
       ),
       when: (
@@ -115,6 +138,31 @@ export default async function StateContractPage({
 
       <WarningStack
         warnings={[
+          ...(blockers.length > 0
+            ? [
+                {
+                  id: "generation-blocked",
+                  severity: "irreversible" as const,
+                  label: "No contract produced",
+                  title: (
+                    <>
+                      JobPaper does not generate {rules.stateName} contracts.{" "}
+                      <span className="num">{blockers.length}</span> required{" "}
+                      {blockers.length === 1 ? "clause has" : "clauses have"} wording the
+                      statute prescribes, and it has not been transcribed.
+                    </>
+                  ),
+                  body: (
+                    <>
+                      A paraphrase of prescribed notice text is not a weaker clause — it is
+                      a non-compliant contract. The generator fails closed rather than
+                      print something that looks official and is not. The clause table
+                      below links each one to its statute.
+                    </>
+                  ),
+                },
+              ]
+            : []),
           {
             id: "unverified-clauses",
             severity: "irreversible",
@@ -151,12 +199,23 @@ export default async function StateContractPage({
           { key: "Trigger on job facts", value: conditionalCount },
           {
             key: "License number on the contract",
-            value: rules.licenseDisplayRequired ? "Required" : "No statewide rule",
+            value: rules.licenseDisplay.statewide ? "Required" : "No statewide rule",
             mono: false,
+          },
+          {
+            key: "Clauses with untranscribed statutory text",
+            value: blockers.length,
           },
           { key: "Prohibited terms listed", value: rules.prohibitedTerms.length },
         ]}
       />
+
+      {rules.licenseDisplay.note ? (
+        <p className="text-dim" style={{ fontSize: "var(--text-step--1)", maxWidth: "var(--measure)" }}>
+          <span className="num">{rules.licenseDisplay.statute}</span> —{" "}
+          {rules.licenseDisplay.note}
+        </p>
+      ) : null}
 
       <section className="space-y-3">
         <h2>Which clauses does {rules.stateName} require, and when?</h2>
@@ -186,10 +245,26 @@ export default async function StateContractPage({
         className="hairline-all rounded-atlas flex flex-col items-start gap-3 p-6"
         style={{ borderRadius: "var(--radius-atlas)", background: "var(--paper-raised)" }}
       >
-        <h2>Build this contract for your job</h2>
+        <h2>
+          {blockers.length > 0
+            ? `Why there is no ${rules.stateName} contract to build`
+            : "Build this contract for your job"}
+        </h2>
         <p className="text-dim" style={{ margin: 0, maxWidth: "var(--measure)" }}>
-          Price the job on the takeoff sheet, and the generator assembles the{" "}
-          {rules.stateName} clauses your job facts trigger — each one carrying its statute.
+          {blockers.length > 0 ? (
+            <>
+              The generator refuses {rules.stateName} until the prescribed notice text is
+              transcribed from the statute. You can still price the job, and the takeoff
+              sheet and invoice work normally — but the price is an estimate, not a binding
+              quote.
+            </>
+          ) : (
+            <>
+              Price the job on the takeoff sheet, and the generator assembles the{" "}
+              {rules.stateName} clauses your job facts trigger — each one carrying its
+              statute.
+            </>
+          )}
         </p>
         <Link href="/">
           <Button className="touch-lg">Price a job</Button>

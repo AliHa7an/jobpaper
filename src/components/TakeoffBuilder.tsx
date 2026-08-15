@@ -218,13 +218,15 @@ export default function TakeoffBuilder() {
       label: "Unverified pricing",
       title: (
         <>
-          Every price on this sheet is placeholder reference data, not a market quote.
+          This sheet is an estimate only. It is not a binding quote, and every price on it
+          is placeholder reference data rather than market cost data.
         </>
       ),
       body: (
         <>
-          Check every line against your own suppliers before you send this. A quote you
-          have sent is a number you have to honor.
+          Check every line against your own suppliers and put your own numbers in before
+          you send it. The moment you hand a customer a quote, it stops being an estimate —
+          it is a number you have to honor.
         </>
       ),
     },
@@ -503,7 +505,7 @@ export default function TakeoffBuilder() {
                 </p>
               </div>
               <div>
-                <p className="micro-label">Quote as</p>
+                <p className="micro-label">Estimated range — not a quote</p>
                 <p className="num text-signal" style={{ fontSize: "var(--text-step-1)", fontWeight: 500 }}>
                   {usd(estimate.range.lowCents)}–{usd(estimate.range.highCents)}
                 </p>
@@ -645,7 +647,8 @@ export default function TakeoffBuilder() {
                 <span className="num">
                   {formatCents(estimate.lineItems[0]?.laborRateCents ?? 0)}
                 </span>
-                /hr. Estimate template — actual costs vary with site conditions.
+                /hr. This sheet is an estimate only and is not a binding quote — actual
+                costs vary with site conditions.
               </p>
             </footer>
           </div>

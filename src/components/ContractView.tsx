@@ -11,6 +11,12 @@
  * "Template, not legal advice" is on every contract surface, in flag orange,
  * with an icon and the words. It is the highest-stakes claim in the product:
  * clause language here is UNVERIFIED and awaits construction attorney review.
+ *
+ * AND IT FAILS CLOSED. Where a state prescribes notice wording word-for-word
+ * and that wording has not been transcribed from the statute, this screen
+ * produces no document at all — it names the clause, the statute and the URL
+ * the text has to come from. A contract that looks right and is not is worse
+ * than no contract, because it gets signed.
  */
 
 import { useEffect, useMemo, useState } from "react";
@@ -21,6 +27,7 @@ import {
   getTradeRules,
   selectClauses,
   STATE_IDS,
+  untranscribedClauses,
   type StateId,
 } from "@engine";
 
@@ -53,30 +60,41 @@ export default function ContractView() {
      contract shows California to someone who saved Texas. */
   const [stateEdit, setStateEdit] = useState<StateId | null>(null);
   const [downPaymentEdit, setDownPaymentEdit] = useState<number | null>(null);
+  const [specialOrderEdit, setSpecialOrderEdit] = useState<number | null>(null);
   const [contractorName, setContractorName] = useState("");
   const [ownerName, setOwnerName] = useState("");
 
   const stateId = stateEdit ?? stored?.stateId ?? "CA";
   const downPaymentCents = downPaymentEdit ?? stored?.downPaymentCents ?? 0;
+  const specialOrderMaterialsCents =
+    specialOrderEdit ?? stored?.specialOrderMaterialsCents ?? 0;
 
   const stateRules = getStateRules(stateId);
 
+  /* Asked BEFORE any attempt to build the document. A blocked state is a
+     property of the rules, not of this job's numbers — see the engine's
+     untranscribedClauses(). */
+  const blockers = useMemo(() => untranscribedClauses(stateRules), [stateRules]);
+
   const selection = useMemo(() => {
-    if (!estimate) return null;
+    if (!estimate || blockers.length > 0) return null;
     return selectClauses(stateRules, {
       totalCents: estimate.totals.totalCents,
       downPaymentCents,
+      specialOrderMaterialsCents,
     });
-  }, [estimate, stateRules, downPaymentCents]);
+  }, [estimate, stateRules, blockers, downPaymentCents, specialOrderMaterialsCents]);
 
   /* Writing OUT to an external store is exactly what an effect is for. */
   useEffect(() => {
-    if (estimate) saveContractFacts({ stateId, downPaymentCents });
-  }, [estimate, stateId, downPaymentCents]);
+    if (estimate) {
+      saveContractFacts({ stateId, downPaymentCents, specialOrderMaterialsCents });
+    }
+  }, [estimate, stateId, downPaymentCents, specialOrderMaterialsCents]);
 
   if (estimate === undefined) return null;
 
-  if (!estimate || !selection) {
+  if (!estimate) {
     return (
       <EmptyState
         heading="No job on the sheet yet"
@@ -113,6 +131,23 @@ export default function ContractView() {
         </>
       ),
     },
+    {
+      id: "price-is-an-estimate",
+      severity: "irreversible",
+      label: "Estimate only",
+      title: (
+        <>
+          The contract price below is an estimate only — it is not a binding quote.
+        </>
+      ),
+      body: (
+        <>
+          It came from placeholder reference pricing on the takeoff sheet, not from market
+          cost data. Price the job against your own suppliers and put your own number in
+          before anyone signs. A price inside a signed contract stops being an estimate.
+        </>
+      ),
+    },
   ];
 
   const scopeRows: LedgerRow[] = estimate.lineItems.map((li) => ({
@@ -124,7 +159,7 @@ export default function ContractView() {
     },
   }));
 
-  const clauseRows: LedgerRow[] = selection.clauses.map((clause, i) => ({
+  const clauseRows: LedgerRow[] = (selection?.clauses ?? []).map((clause, i) => ({
     id: clause.id,
     cells: {
       clause: (
@@ -149,7 +184,7 @@ export default function ContractView() {
   return (
     <div className="space-y-6">
       <form
-        className="no-print grid grid-cols-2 gap-3 sm:grid-cols-4"
+        className="no-print grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5"
         aria-label="Contract details"
         onSubmit={(e) => e.preventDefault()}
       >
@@ -175,6 +210,20 @@ export default function ContractView() {
             step={10000}
           />
         </Field>
+        {/* PA's deposit cap is one-third of the price PLUS special-order
+            materials (73 P.S. §517.9), so the lawful ceiling depends on a fact
+            no other state asks for. Left at zero it reads as the strict cap. */}
+        <Field label="Special-order materials" htmlFor="specialOrder" className="min-w-0">
+          <NumberInput
+            id="specialOrder"
+            unit="cents"
+            value={specialOrderMaterialsCents}
+            onChange={setSpecialOrderEdit}
+            min={0}
+            max={estimate.totals.totalCents}
+            step={10000}
+          />
+        </Field>
         <Field label="Contractor" htmlFor="contractorName" className="min-w-0">
           <Input
             id="contractorName"
@@ -193,6 +242,78 @@ export default function ContractView() {
         </Field>
       </form>
 
+      {selection === null ? (
+        <section
+          aria-labelledby="blocked-heading"
+          className="hairline-all rounded-atlas min-w-0 p-4 sm:p-6"
+          style={{ borderRadius: "var(--radius-atlas)", background: "var(--paper)" }}
+        >
+          <WarningStack
+            className="mb-4"
+            warnings={[
+              {
+                id: "blocked",
+                severity: "irreversible",
+                label: "No contract produced",
+                title: (
+                  <>
+                    JobPaper will not generate a {stateRules.stateName} contract.{" "}
+                    <span className="num">{blockers.length}</span> required{" "}
+                    {blockers.length === 1 ? "clause has" : "clauses have"} wording the
+                    statute prescribes word-for-word, and that wording has not been
+                    transcribed.
+                  </>
+                ),
+                body: (
+                  <>
+                    A paraphrase of prescribed notice text is not a weaker clause — it is a
+                    non-compliant contract, and in {stateRules.stateName} that can reach
+                    lien validity and enforceability. Producing nothing is the safe
+                    outcome. Each clause below names the statute and the source its text
+                    has to be transcribed from.
+                  </>
+                ),
+              },
+            ]}
+          />
+
+          <h2 id="blocked-heading" className="mb-2">
+            What is missing
+          </h2>
+          <ul className="m-0 flex list-none flex-col gap-3 p-0">
+            {blockers.map((b) => (
+              <li key={b.clauseId} className="hairline-t pt-3">
+                <p className="text-ink" style={{ fontWeight: 600, margin: 0 }}>
+                  {b.title}
+                </p>
+                <p
+                  className="num text-dim"
+                  style={{ fontSize: "var(--text-step--1)", margin: 0 }}
+                >
+                  {b.statute} · {b.clauseId} · {b.textStatus}
+                </p>
+                <p style={{ fontSize: "var(--text-step--1)", margin: "4px 0 0" }}>
+                  <a
+                    href={b.sourceUrl}
+                    rel="noopener"
+                    className="underline underline-offset-4"
+                  >
+                    Transcribe the text from the statute
+                  </a>
+                </p>
+              </li>
+            ))}
+          </ul>
+
+          <p
+            className="text-dim mt-4"
+            style={{ fontSize: "var(--text-step--1)", maxWidth: "var(--measure)" }}
+          >
+            Pick another state above to see which ones do generate, or read what{" "}
+            {stateRules.stateName} requires and take the statutory text to an attorney.
+          </p>
+        </section>
+      ) : (
       <div
         className="print-sheet hairline-all rounded-atlas min-w-0 p-4 sm:p-6"
         style={{ borderRadius: "var(--radius-atlas)", background: "var(--paper)" }}
@@ -209,7 +330,7 @@ export default function ContractView() {
           <p className="text-dim" style={{ fontSize: "var(--text-step--1)" }}>
             Contractor: {contractorName || "____________________"} · Owner:{" "}
             {ownerName || "____________________"}
-            {selection.licenseDisplayRequired ? (
+            {selection.licenseDisplay.statewide ? (
               <>
                 {" "}
                 · License / registration #: ____________ (display required in{" "}
@@ -259,6 +380,9 @@ export default function ContractView() {
           />
           <p className="text-dim mt-2" style={{ fontSize: "var(--text-step--1)" }}>
             Remaining payments are scheduled against work performed and materials delivered.
+          </p>
+          <p className="text-ink mt-2" style={{ fontSize: "var(--text-step--1)", fontWeight: 600 }}>
+            The contract price above is an estimate only. It is not a binding quote.
           </p>
         </section>
 
@@ -319,15 +443,19 @@ export default function ContractView() {
                 {i < selection.citations.length - 1 ? " · " : ""}
               </span>
             ))}
-            . This is a template, not legal advice.
+            . This is a template, not legal advice, and the price is an estimate, not a
+            binding quote.
           </p>
         </footer>
       </div>
+      )}
 
       <div className="no-print flex flex-wrap gap-2">
-        <Button className="touch-lg" onClick={() => window.print()}>
-          Print this contract
-        </Button>
+        {selection !== null ? (
+          <Button className="touch-lg" onClick={() => window.print()}>
+            Print this contract
+          </Button>
+        ) : null}
         <Link href={`/contracts/${stateRules.stateId}`}>
           <Button variant="secondary" className="touch-lg">
             What {stateRules.stateName} requires

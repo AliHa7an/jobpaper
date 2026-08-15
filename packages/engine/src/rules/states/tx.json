@@ -1,9 +1,27 @@
 {
   "stateId": "TX",
   "stateName": "Texas",
-  "ruleSetVersion": "states-tx-2026-08",
+  "ruleSetVersion": "states-tx-2026-08.2",
   "effectiveFrom": "2026-08-01",
   "effectiveTo": null,
+  "_verificationNote": {
+    "lastPass": "2026-08-15",
+    "status": "PARTIALLY VERIFIED via SECONDARY sources only — see /VERIFICATION-STATUS.md. Batch A remediation applied 2026-08-15 (ruleSetVersion bumped to .2): prescribed-but-untranscribed clause text removed and marked, missing clauses added, cites corrected. Contract generation now FAILS CLOSED for this state where any clause is untranscribed.",
+    "sourceProblem": "citations[] URLs are UNRESOLVED: statutes.capitol.texas.gov and capitol.texas.gov are both DNS-unreachable from the verification environment, so neither encoded URL was confirmed to resolve. All findings below come from https://texas.public.law/statutes/... (SECONDARY). Re-confirm every item against the state's own site before clearing any flag.",
+    "MISSING_REQUIRED_CLAUSES": {
+      "propCode_53_255": "FIXED (structurally) 2026-08-15: requiredClauses[residential-construction-disclosure-statement] now exists, with textStatus SUBSTANTIALLY_SIMILAR_REQUIRED_NOT_TRANSCRIBED and an empty text. A 'Disclosure Statement for Residential Construction Contract' is required; the statute prescribes a form that 'must read substantially similar to' the statutory text — substantial compliance suffices here, unlike the verbatim provisions below, but the form still has to be transcribed before anything can be rendered. Opens 'KNOW YOUR RIGHTS AND RESPONSIBILITIES UNDER THE LAW.' with headed sections GET IT IN WRITING and READ BEFORE YOU SIGN. Source: https://texas.public.law/statutes/tex._prop._code_section_53.255",
+      "busCom_601_053": "FIXED (structurally) 2026-08-15: requiredClauses[notice-of-cancellation-form] now exists, with textStatus VERBATIM_REQUIRED_NOT_TRANSCRIBED and an empty text. VERBATIM wording, 10-POINT BOLDFACE, supplied IN DUPLICATE and EASILY DETACHABLE. Covers the three-business-day window, return of traded-in property/payments within 10 business days, cancellation of security interests, the consumer's duty to make goods available, and the 20-day abandonment rule. The dangling cross-reference in requiredClauses[right-to-cancel-solicitation].text is gone because that text field is now empty too. Source: https://texas.public.law/statutes/tex._bus._and_com._code_section_601.053"
+    },
+    "VERBATIM_MANDATED": "FIXED (structurally) 2026-08-15: requiredClauses[right-to-cancel-solicitation].text has been EMPTIED and marked VERBATIM_REQUIRED_NOT_TRANSCRIBED — the non-conforming paraphrase can no longer be rendered. Bus. & Com. 601.052 prescribes the cancellation statement VERBATIM in BOLDFACED TYPE OF AT LEAST 10 POINTS, positioned near the signature space or on the front of the receipt. The removed placeholder embedded the mandated sentence inside an added conditional ('If this transaction was solicited or agreed to at your residence...') and changed 'the buyer' to 'the consumer' — both alter prescribed text. STILL UNMODELLED: 601.052 also requires the merchant to deliver a receipt or contract copy showing the transaction date and the merchant's name and address.",
+    "dependsOn": {
+      "homeImprovementThresholdCents": "VERIFIED at 0. Prop. Code 53.254 imposes no dollar threshold and no statewide written-contract threshold was found. Encoding 0 is correct.",
+      "homesteadLienNotice": "SUBSTANCE VERIFIED against Prop. Code 53.254(a)-(e): written contract; executed BEFORE material is furnished or labour performed; signed by BOTH SPOUSES if the owner is married; FILED WITH THE COUNTY CLERK of the county where the homestead is located. 53.254 does not prescribe this particular notice verbatim, so the clause may be drafted — but note 53.254(f) DOES prescribe verbatim text for the lien affidavit ('NOTICE: THIS IS NOT A LIEN. THIS IS ONLY AN AFFIDAVIT CLAIMING A LIEN.', at least 10-point boldface at the top of the page), and 53.254(g) prescribes a statement that must accompany the Subchapter C notice to the owner.",
+      "finalBillsPaidTrigger": "FIXED 2026-08-15: the trigger is now 'always'. The previous 'total > $5,000' had NO statutory basis — Prop. Code 53.259(a) applies 'As a condition of final payment under a residential construction contract' with no monetary floor, so the old trigger suppressed a required clause on every contract under $5,000. STILL UNENCODED: 53.259(c) makes a false affidavit a misdemeanour (fine up to $4,000 and/or up to one year) and 53.259(d) imposes personal liability on the signer.",
+      "disclosureNoGeneralLicense": "UNRESOLVED. requiredClauses[disclosure-no-general-license] asserts that Texas does not license general residential construction contractors statewide, cited only to 'Tex. Occ. Code (trade-specific chapters)' — not a section. Nothing fetched confirms it. Either cite a specific provision or remove the clause; an uncited negative statement about licensing law should not ship.",
+      "licenseDisplayRequired": "false is consistent with the absence of any display requirement in Prop. Code ch. 53 or Bus. & Com. ch. 601 — but this is verification by ABSENCE, which is weaker than a positive cite. Re-confirm when the official host is reachable."
+    },
+    "recheckCadence": "Texas legislature meets in regular session in odd-numbered years. Re-verify after each session."
+  },
   "citations": [
     {
       "label": "Tex. Prop. Code ch. 53 (mechanic's, contractor's, or materialman's lien)",
@@ -23,31 +41,89 @@
       "title": "Homestead lien disclosure",
       "text": "UNVERIFIED — ATTORNEY REVIEW REQUIRED. [Template] NOTICE: This contract is subject to Chapter 53 of the Texas Property Code. If this property is your homestead, a contractor may not obtain a valid lien unless this contract is signed by both spouses (if married) before any work begins and is filed with the county clerk of the county where the homestead is located.",
       "trigger": "always",
-      "statute": "Tex. Prop. Code §53.254"
+      "statute": "Tex. Prop. Code §53.254",
+      "textStatus": "DRAFTED"
+    },
+    {
+      "id": "residential-construction-disclosure-statement",
+      "title": "Disclosure statement for residential construction contract",
+      "text": "",
+      "trigger": "always",
+      "statute": "Tex. Prop. Code §53.255",
+      "textStatus": "SUBSTANTIALLY_SIMILAR_REQUIRED_NOT_TRANSCRIBED",
+      "sourceUrl": "https://texas.public.law/statutes/tex._prop._code_section_53.255",
+      "formatting": {
+        "notes": [
+          "§53.255 prescribes a form that 'must read substantially similar to' the statutory text. Substantial compliance suffices — unlike §601.053 — but the form still has to be transcribed before it can be adapted.",
+          "Structure, for transcription review only — NOT a substitute for the wording: opens 'KNOW YOUR RIGHTS AND RESPONSIBILITIES UNDER THE LAW.' and carries the headed sections GET IT IN WRITING and READ BEFORE YOU SIGN.",
+          "sourceUrl is a SECONDARY host (texas.public.law). statutes.capitol.texas.gov was DNS-unreachable at the 2026-08-15 pass. Transcribe from the state's own site once it resolves."
+        ]
+      }
     },
     {
       "id": "right-to-cancel-solicitation",
       "title": "Right to cancel (home solicitation)",
-      "text": "UNVERIFIED — ATTORNEY REVIEW REQUIRED. [Template] If this transaction was solicited or agreed to at your residence, you, the consumer, may cancel this transaction at any time prior to midnight of the third business day after the date of this transaction. See the attached notice of cancellation form for an explanation of this right.",
+      "text": "",
       "trigger": "always",
-      "statute": "Tex. Bus. & Com. Code §601.052"
+      "statute": "Tex. Bus. & Com. Code §601.052",
+      "textStatus": "VERBATIM_REQUIRED_NOT_TRANSCRIBED",
+      "sourceUrl": "https://texas.public.law/statutes/tex._bus._and_com._code_section_601.052",
+      "formatting": {
+        "minPointSize": 10,
+        "boldface": true,
+        "placement": "In immediate proximity to the space reserved for the buyer's signature, or on the front of the receipt.",
+        "notes": [
+          "The statement is prescribed word-for-word. The removed placeholder wrapped it in an added conditional and substituted 'consumer' for 'buyer'; both alter prescribed text.",
+          "Not modelled by this schema: §601.052 also obliges the merchant to deliver a receipt or copy of the contract showing the transaction date and the merchant's name and address.",
+          "sourceUrl is a SECONDARY host (texas.public.law). Transcribe from statutes.capitol.texas.gov once it resolves."
+        ]
+      }
+    },
+    {
+      "id": "notice-of-cancellation-form",
+      "title": "Notice of cancellation form",
+      "text": "",
+      "trigger": "always",
+      "statute": "Tex. Bus. & Com. Code §601.053",
+      "textStatus": "VERBATIM_REQUIRED_NOT_TRANSCRIBED",
+      "sourceUrl": "https://texas.public.law/statutes/tex._bus._and_com._code_section_601.053",
+      "formatting": {
+        "minPointSize": 10,
+        "boldface": true,
+        "copies": 2,
+        "easilyDetachable": true,
+        "placement": "A separate, easily detachable form attached to the contract or receipt, supplied in duplicate.",
+        "notes": [
+          "This is a separate FORM, not a paragraph of the contract. The schema can record 'in duplicate' and 'easily detachable' but nothing downstream can yet produce a detachable duplicate — resolve that before rendering.",
+          "Subject matter, for transcription review only — NOT a substitute for the wording: the three-business-day cancellation window; return of traded-in property and payments within 10 business days; cancellation of any security interest; the consumer's duty to make goods available to the merchant; the 20-day abandonment rule.",
+          "sourceUrl is a SECONDARY host (texas.public.law). Transcribe from statutes.capitol.texas.gov once it resolves."
+        ]
+      }
     },
     {
       "id": "disclosure-no-general-license",
       "title": "Licensing disclosure",
       "text": "UNVERIFIED — ATTORNEY REVIEW REQUIRED. [Template] Texas does not license general residential construction contractors statewide. Trade work included in this contract that requires a state license (plumbing, electrical, HVAC) will be performed by appropriately licensed tradespeople, whose license numbers are available on request.",
       "trigger": "always",
-      "statute": "Tex. Occ. Code (trade-specific chapters)"
+      "statute": "Tex. Occ. Code (trade-specific chapters)",
+      "textStatus": "DRAFTED"
     },
     {
       "id": "final-bills-paid-affidavit",
       "title": "Final payment — bills-paid affidavit",
       "text": "UNVERIFIED — ATTORNEY REVIEW REQUIRED. [Template] At final payment, the contractor will furnish an affidavit stating that all bills for labor and materials incorporated into the improvements have been paid or will be paid from the final payment, as provided by Texas Property Code §53.259.",
-      "trigger": "total > $5,000",
-      "statute": "Tex. Prop. Code §53.259"
+      "trigger": "always",
+      "statute": "Tex. Prop. Code §53.259",
+      "textStatus": "DRAFTED"
     }
   ],
-  "licenseDisplayRequired": false,
+  "licenseDisplay": {
+    "statewide": false,
+    "statute": "Tex. Prop. Code ch. 53; Tex. Bus. & Com. Code ch. 601 (no display duty in either)",
+    "sourceUrl": "https://texas.public.law/statutes/tex._prop._code_section_53.254",
+    "note": "Verified by ABSENCE — neither Prop. Code ch. 53 nor Bus. & Com. ch. 601 imposes a licence-display duty. Absence is weaker evidence than a positive cite; re-confirm when statutes.capitol.texas.gov is reachable. Trade work requiring a state licence (plumbing, electrical, HVAC) is licensed under its own Occupations Code chapter.",
+    "jurisdictions": []
+  },
   "prohibitedTerms": [
     "Waiver of the consumer's cancellation rights under ch. 601",
     "Prospective waiver of mechanic's lien rights by subcontractors (restricted under Prop. Code ch. 53)"

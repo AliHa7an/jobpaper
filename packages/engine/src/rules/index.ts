@@ -5,7 +5,7 @@
  * never guess.
  */
 
-import type { StateId, StateRules, TradeId, TradeRules } from "../types";
+import type { ClauseTextStatus, StateId, StateRules, TradeId, TradeRules } from "../types";
 
 import bathroomRemodel from "./trades/bathroom-remodel.json";
 import decks from "./trades/decks.json";
@@ -33,6 +33,12 @@ function asTradeRules(raw: unknown): TradeRules {
   return r;
 }
 
+const CLAUSE_TEXT_STATUSES: readonly ClauseTextStatus[] = [
+  "DRAFTED",
+  "VERBATIM_REQUIRED_NOT_TRANSCRIBED",
+  "SUBSTANTIALLY_SIMILAR_REQUIRED_NOT_TRANSCRIBED",
+];
+
 function asStateRules(raw: unknown): StateRules {
   const r = raw as StateRules;
   if (
@@ -41,9 +47,36 @@ function asStateRules(raw: unknown): StateRules {
     !Array.isArray(r.citations) ||
     r.citations.length === 0 ||
     !Array.isArray(r.requiredClauses) ||
-    !Number.isInteger(r.homeImprovementThresholdCents)
+    !Number.isInteger(r.homeImprovementThresholdCents) ||
+    typeof r.licenseDisplay !== "object" ||
+    r.licenseDisplay === null ||
+    typeof r.licenseDisplay.statewide !== "boolean" ||
+    !Array.isArray(r.licenseDisplay.jurisdictions)
   ) {
     throw new Error("Malformed state rules file");
+  }
+
+  // Every clause declares whether its wording may be drafted or must be
+  // transcribed from the statute. A clause with no declared status would be
+  // treated as drafted by default, and defaulting to "safe to print" is exactly
+  // the failure this field exists to prevent.
+  for (const clause of r.requiredClauses) {
+    if (!CLAUSE_TEXT_STATUSES.includes(clause.textStatus)) {
+      throw new Error(
+        `Clause "${clause.id}" in ${r.stateId} has no valid textStatus (got ${String(clause.textStatus)})`,
+      );
+    }
+    if (clause.textStatus === "DRAFTED") continue;
+    if (typeof clause.sourceUrl !== "string" || clause.sourceUrl.length === 0) {
+      throw new Error(
+        `Clause "${clause.id}" in ${r.stateId} is ${clause.textStatus} but carries no sourceUrl to transcribe from`,
+      );
+    }
+    if (clause.text.length > 0) {
+      throw new Error(
+        `Clause "${clause.id}" in ${r.stateId} is ${clause.textStatus} but carries text. Untranscribed prescribed wording must be empty — a paraphrase in this field would be rendered into a contract.`,
+      );
+    }
   }
   return r;
 }

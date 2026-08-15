@@ -1,9 +1,24 @@
 {
   "stateId": "FL",
   "stateName": "Florida",
-  "ruleSetVersion": "states-fl-2026-08",
+  "ruleSetVersion": "states-fl-2026-08.2",
   "effectiveFrom": "2026-08-01",
   "effectiveTo": null,
+  "_verificationNote": {
+    "lastPass": "2026-08-15",
+    "status": "PARTIALLY VERIFIED via SECONDARY sources only — see /VERIFICATION-STATUS.md. Batch A remediation applied 2026-08-15 (ruleSetVersion bumped to .2): prescribed-but-untranscribed clause text removed and marked, missing clauses added, cites corrected. Contract generation now FAILS CLOSED for this state where any clause is untranscribed.",
+    "sourceProblem": "citations[] URLs are UNRESOLVED: flsenate.gov is DNS-unreachable and leg.state.fl.us refuses connections from the verification environment, so neither encoded URL was confirmed to resolve. All findings below come from https://codes.findlaw.com/fl/... (SECONDARY). Re-confirm against the state's own site before clearing any flag.",
+    "VERBATIM_MANDATED": "FIXED (structurally) 2026-08-15: requiredClauses[lien-law-notice].text has been EMPTIED and marked VERBATIM_REQUIRED_NOT_TRANSCRIBED, so the truncated notice can no longer be rendered, and the engine now refuses to generate any FL contract. Fla. Stat. 713.015(1) prescribes the notice VERBATIM. It must be 'printed in no less than 12-POINT, CAPITALIZED, BOLDFACED TYPE on the front page of the contract or on a separate page, SIGNED BY THE OWNER AND DATED'. The statute does NOT use 'substantially in the following form'. The removed text stopped after the '...EVEN IF YOU HAVE ALREADY PAID YOUR CONTRACTOR IN FULL.' paragraph; the statutory notice continues past that point with further prescribed paragraphs. Transcribe the whole notice character-for-character from the statute; do NOT reconstruct from memory.",
+    "schemaGaps": "FIXED (recorded) 2026-08-15: both 713.015 requirements are now recorded in requiredClauses[lien-law-notice].formatting — placement ('front page of the contract or on a separate page') and ownerSignatureAndDateRequired. RECORDING IS NOT RENDERING: nothing downstream can yet place a notice on a separate signed and dated page, so this remains a blocker for generation even once the text is transcribed.",
+    "dependsOn": {
+      "homeImprovementThresholdCents": "VERIFIED at $2,500, and it is the correct trigger for BOTH notices. 713.015 applies to direct contracts over $2,500 for improvements to residential real property of up to four units. 489.1425 does not apply where 'the value of all labor and materials does not exceed $2,500'.",
+      "lienLawNoticeTrigger": "WRONG COMPARATOR. requiredClauses[lien-law-notice].trigger uses 'total >= threshold' but the statute says over/greater than $2,500. A contract at exactly $2,500 currently fires the notice and should not. Note this is INCONSISTENT with requiredClauses[recovery-fund-notice].trigger, which correctly uses 'total > $2,500' for the same dollar figure.",
+      "recoveryFundNotice": "489.1425 requires the contract to 'contain a written statement' explaining recovery-fund rights, and the Florida Construction Industry Licensing Board contact information is 'as established by BOARD RULE' — the address must be pulled from the current board rule, not hard-coded from a template. UNRESOLVED whether the statute prescribes the wording verbatim or requires only substance; that distinction could not be settled from the secondary source and must be checked.",
+      "licenseNumberClause": "489.119(5) requires the number in 'each offer of services, business proposal, bid, contract, or advertisement, regardless of medium' — NOT specifically the first page, as the encoded text claims. It also requires the number on each building permit application and permit, and conspicuous display on vehicles bearing the contractor's name or artwork. 'Advertisement' excludes business stationery and promotional items.",
+      "licenseDisplayRequired": "VERIFIED true via 489.119(5)."
+    },
+    "recheckCadence": "Re-verify annually after the Florida legislative session. The CILB recovery-fund contact details are set by BOARD RULE and can change without any statutory amendment — check them separately from the statute."
+  },
   "citations": [
     {
       "label": "Fla. Stat. §713.015 (mandatory lien-law notice in direct contracts)",
@@ -21,26 +36,48 @@
     {
       "id": "lien-law-notice",
       "title": "Construction lien law notice",
-      "text": "UNVERIFIED — ATTORNEY REVIEW REQUIRED. [Template] ACCORDING TO FLORIDA'S CONSTRUCTION LIEN LAW (SECTIONS 713.001–713.37, FLORIDA STATUTES), THOSE WHO WORK ON YOUR PROPERTY OR PROVIDE MATERIALS AND SERVICES AND ARE NOT PAID IN FULL HAVE A RIGHT TO ENFORCE THEIR CLAIM FOR PAYMENT AGAINST YOUR PROPERTY. THIS CLAIM IS KNOWN AS A CONSTRUCTION LIEN. IF YOUR CONTRACTOR OR A SUBCONTRACTOR FAILS TO PAY SUBCONTRACTORS, SUB-SUBCONTRACTORS, OR MATERIAL SUPPLIERS, THOSE PEOPLE WHO ARE OWED MONEY MAY LOOK TO YOUR PROPERTY FOR PAYMENT, EVEN IF YOU HAVE ALREADY PAID YOUR CONTRACTOR IN FULL.",
+      "text": "",
       "trigger": "total >= threshold",
-      "statute": "Fla. Stat. §713.015"
+      "statute": "Fla. Stat. §713.015(1)",
+      "textStatus": "VERBATIM_REQUIRED_NOT_TRANSCRIBED",
+      "sourceUrl": "https://codes.findlaw.com/fl/title-xl-real-and-personal-property/fl-st-sect-713-015/",
+      "formatting": {
+        "minPointSize": 12,
+        "boldface": true,
+        "capitalized": true,
+        "placement": "Front page of the contract, or on a separate page.",
+        "ownerSignatureAndDateRequired": true,
+        "notes": [
+          "§713.015(1) does NOT say 'substantially in the following form' — the wording is prescribed.",
+          "The previously encoded text was TRUNCATED: it stopped after the '...EVEN IF YOU HAVE ALREADY PAID YOUR CONTRACTOR IN FULL.' paragraph and omitted the closing prescribed paragraphs.",
+          "sourceUrl is a SECONDARY host (codes.findlaw.com). flsenate.gov was DNS-unreachable and leg.state.fl.us refused connections at the 2026-08-15 pass. Transcribe from the state's own site once it resolves."
+        ]
+      }
     },
     {
       "id": "recovery-fund-notice",
       "title": "Construction recovery fund notice",
       "text": "UNVERIFIED — ATTORNEY REVIEW REQUIRED. [Template] FLORIDA HOMEOWNERS' CONSTRUCTION RECOVERY FUND: PAYMENT, UP TO A LIMITED AMOUNT, MAY BE AVAILABLE FROM THE FLORIDA HOMEOWNERS' CONSTRUCTION RECOVERY FUND IF YOU LOSE MONEY ON A PROJECT PERFORMED UNDER CONTRACT, WHERE THE LOSS RESULTS FROM SPECIFIED VIOLATIONS OF FLORIDA LAW BY A LICENSED CONTRACTOR. FOR INFORMATION ABOUT THE RECOVERY FUND AND FILING A CLAIM, CONTACT THE FLORIDA CONSTRUCTION INDUSTRY LICENSING BOARD.",
       "trigger": "total > $2,500",
-      "statute": "Fla. Stat. §489.1425"
+      "statute": "Fla. Stat. §489.1425",
+      "textStatus": "DRAFTED"
     },
     {
       "id": "license-number",
       "title": "Contractor license identification",
       "text": "UNVERIFIED — ATTORNEY REVIEW REQUIRED. [Template] The contractor's state certification or registration number appears on the first page of this contract and in all advertising, as required by Florida law.",
       "trigger": "always",
-      "statute": "Fla. Stat. §489.119(5)"
+      "statute": "Fla. Stat. §489.119(5)",
+      "textStatus": "DRAFTED"
     }
   ],
-  "licenseDisplayRequired": true,
+  "licenseDisplay": {
+    "statewide": true,
+    "statute": "Fla. Stat. §489.119(5)",
+    "sourceUrl": "https://codes.findlaw.com/fl/title-xxxii-regulation-of-professions-and-occupations/fl-st-sect-489-119/",
+    "note": "§489.119(5) requires the certification or registration number in each offer of services, business proposal, bid, contract or advertisement, regardless of medium — not specifically the first page. Verified via a SECONDARY host; re-confirm against flsenate.gov once it resolves.",
+    "jurisdictions": []
+  },
   "prohibitedTerms": [
     "Advance waiver of the owner's lien-law notices",
     "Terms purporting to waive the contractor's licensing obligations"

@@ -1,9 +1,24 @@
 {
   "stateId": "NY",
   "stateName": "New York",
-  "ruleSetVersion": "states-ny-2026-08",
+  "ruleSetVersion": "states-ny-2026-08.2",
   "effectiveFrom": "2026-08-01",
   "effectiveTo": null,
+  "_verificationNote": {
+    "lastPass": "2026-08-15",
+    "status": "VERIFIED against the state's own site — see /VERIFICATION-STATUS.md. Batch A remediation applied 2026-08-15 (ruleSetVersion bumped to .2): prescribed-but-untranscribed clause text removed and marked, missing clauses added, cites corrected. Contract generation now FAILS CLOSED for this state where any clause is untranscribed.",
+    "sourceFetched": "https://www.nysenate.gov/legislation/laws/GBS/771, .../GBS/770 and .../LIE/71-A (all fetched 2026-08-15, official NY source)",
+    "MISSING_REQUIRED_CLAUSE": "FIXED (structurally) 2026-08-15: requiredClauses[mechanics-lien-notice] now exists as a first-class entry carrying statute, sourceUrl, formatting and textStatus VERBATIM_REQUIRED_NOT_TRANSCRIBED. Its text is still EMPTY and the engine therefore refuses to generate any NY contract. GBL 771(1)(d) prescribes a MECHANIC'S LIEN NOTICE in 'CLEAR AND CONSPICUOUS BOLD FACE TYPE', covering: that an unpaid contractor, subcontractor or materialman may have a valid claim known as a mechanic's lien; that such a lien may be discharged; that payment of the agreed price before filing may invalidate the lien; and that the owner may contact an attorney. Transcribe the exact text from https://www.nysenate.gov/legislation/laws/GBS/771; do NOT reconstruct from memory.",
+    "LICENSE_DISPLAY_IS_WRONG": "FIXED 2026-08-15: the boolean licenseDisplayRequired has been replaced by the jurisdiction-scoped licenseDisplay object, with statewide=false. GBL 771(1)(a) requires 'The name, address, telephone number and license number, IF APPLICABLE, of the contractor.' The words 'if applicable' are decisive: New York has no universal state contractor licence, so no statewide display duty can be asserted. Licensing is county/municipal (NYC and the surrounding counties run their own regimes); jurisdictions[] is deliberately EMPTY because no local regime has been verified against a primary source, and an uncited local rule is an assertion, not an encoding.",
+    "dependsOn": {
+      "homeImprovementThresholdCents": "VERIFIED at $500 via GBL 770, which defines a home improvement contract as one where the aggregate price 'exceeds five hundred dollars'. The trigger 'total >= threshold' is therefore off by one. GBL 770 is NOT currently in citations[] — add it. Separately, 770 defines a 'home improvement contractor' by reference to $1,500 of aggregate business over 12 consecutive months, a different test this file does not model.",
+      "writtenContractTerms": "GBL 771(1) requires more than the placeholder lists. Missing: the contractor's LICENCE NUMBER 'if applicable' (a); a statement of ANY CONTINGENCIES affecting the dates and whether the completion date is essential (b); make/model or other identifying information for materials (c); and the PROPERTY AND CASUALTY INSURANCE DISCLOSURE including insurer contact details, added effective 23 April 2022 (i).",
+      "rightToCancelCite": "WRONG SUBSECTION. The cancellation provision is GBL 771(1)(h), not (1)(g) — (1)(g) is the time-and-materials carve-out from the deposit rules. The substance of the placeholder text is right (midnight of the third business day after signing). Unencoded: the statutory BONA FIDE EMERGENCY exception, which requires the owner's signed, handwritten waiver statement. The 'Pers. Prop. Law 428' cross-cite was NOT verified — resolve or drop it.",
+      "depositEscrow": "Lien Law 71-a(4) VERIFIED as to the core: deposit within FIVE BUSINESS DAYS; written notice of the depository location within TEN BUSINESS DAYS. But the encoded text is incomplete — it omits the third alternative, an IRREVOCABLE LETTER OF CREDIT ISSUED BY A BANK, and omits that the bond/indemnity/letter-of-credit alternative must be delivered within ten business days of receiving payment. Also unencoded: withdrawals may not exceed the contract payment schedule, the funds remain the owner's property, and failure to escrow is itself a violation of the section. NO VERBATIM WORDING IS PRESCRIBED by 71-a(4) — this clause may be drafted, unlike the 771(1)(d) notice.",
+      "progressPaymentCite": "WRONG SUBSECTION. requiredClauses[progress-payment-schedule].statute cites 771(1)(d), which is the mechanic's lien notice. The progress-payment schedule — dollar amounts and the state of completion before each payment falls due, bearing a reasonable relationship to work performed — is GBL 771(1)(f), with the deposit obligation at (1)(e) and the time-and-materials exemption at (1)(g)."
+    },
+    "recheckCadence": "Re-verify annually after the NY legislative session; GBL 771 was last materially amended effective 2022-04-23. Municipal licensing regimes change independently of state law and must be tracked per jurisdiction."
+  },
   "citations": [
     {
       "label": "NY Gen. Bus. Law art. 36-A, §771 (home improvement contracts)",
@@ -23,31 +38,57 @@
       "title": "Written contract with required terms",
       "text": "UNVERIFIED — ATTORNEY REVIEW REQUIRED. [Template] This home improvement contract is in writing and legibly sets forth the contractor's name, address, and telephone number, the approximate start and completion dates, a description of the work and materials, and the agreed price, as required by New York General Business Law §771.",
       "trigger": "total >= threshold",
-      "statute": "Gen. Bus. Law §771(1)"
+      "statute": "Gen. Bus. Law §771(1)",
+      "textStatus": "DRAFTED"
+    },
+    {
+      "id": "mechanics-lien-notice",
+      "title": "Mechanic's lien notice",
+      "text": "",
+      "trigger": "total >= threshold",
+      "statute": "Gen. Bus. Law §771(1)(d)",
+      "textStatus": "VERBATIM_REQUIRED_NOT_TRANSCRIBED",
+      "sourceUrl": "https://www.nysenate.gov/legislation/laws/GBS/771",
+      "formatting": {
+        "boldface": true,
+        "notes": [
+          "GBL §771(1)(d) requires the notice in 'clear and conspicuous bold face type'. The statute does not state a minimum point size; 'clear and conspicuous' is the standard.",
+          "Substance the prescribed text covers, for transcription review only — NOT a substitute for the wording: an unpaid contractor, subcontractor or materialman may have a valid claim known as a mechanic's lien; such a lien may be discharged; payment of the agreed price before the lien is filed may invalidate it; the owner may contact an attorney."
+        ]
+      }
     },
     {
       "id": "right-to-cancel",
       "title": "Three-day right to cancel",
       "text": "UNVERIFIED — ATTORNEY REVIEW REQUIRED. [Template] You, the owner, may cancel this home improvement contract until midnight of the third business day after the day you signed it. Cancellation must be in writing and delivered or mailed to the contractor at the address shown in this contract.",
       "trigger": "always",
-      "statute": "Gen. Bus. Law §771(1)(g); Pers. Prop. Law §428"
+      "statute": "Gen. Bus. Law §771(1)(g); Pers. Prop. Law §428",
+      "textStatus": "DRAFTED"
     },
     {
       "id": "deposit-escrow",
       "title": "Deposit escrow or bond notice",
       "text": "UNVERIFIED — ATTORNEY REVIEW REQUIRED. [Template] New York law requires that any advance payment received under a home improvement contract be deposited into an escrow account in a New York bank within five business days, or that the contractor instead post a bond or contract of indemnity guaranteeing the return or proper application of the payment. The deposit may only be withdrawn as the work progresses in accordance with the payment schedule.",
       "trigger": "downpayment > 0",
-      "statute": "Lien Law §71-a(4); Gen. Bus. Law §771(1)(e)"
+      "statute": "Lien Law §71-a(4); Gen. Bus. Law §771(1)(e)",
+      "textStatus": "DRAFTED"
     },
     {
       "id": "progress-payment-schedule",
       "title": "Progress payment schedule",
       "text": "UNVERIFIED — ATTORNEY REVIEW REQUIRED. [Template] The payment schedule in this contract bears a reasonable relationship to the work performed and the materials and equipment delivered, including any down payment, as New York law requires.",
       "trigger": "downpayment > 0",
-      "statute": "Gen. Bus. Law §771(1)(d)"
+      "statute": "Gen. Bus. Law §771(1)(d)",
+      "textStatus": "DRAFTED"
     }
   ],
-  "licenseDisplayRequired": true,
+  "licenseDisplay": {
+    "statewide": false,
+    "statute": "Gen. Bus. Law §771(1)(a)",
+    "sourceUrl": "https://www.nysenate.gov/legislation/laws/GBS/771",
+    "note": "GBL §771(1)(a) requires the contractor's licence number 'if applicable'. New York has no universal state contractor licence, so no statewide display duty exists. Licensing is county or municipal — New York City and several surrounding counties run their own regimes. Check the county or municipality where the work is performed.",
+    "jurisdictions": []
+  },
   "prohibitedTerms": [
     "Waiver of the owner's cancellation rights",
     "Payment schedules with no reasonable relationship to work performed",

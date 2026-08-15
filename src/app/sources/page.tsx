@@ -1,7 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { STATE_IDS, STATE_RULES, TRADE_IDS, TRADE_RULES } from "@engine";
+import {
+  STATE_IDS,
+  STATE_RULES,
+  TRADE_IDS,
+  TRADE_RULES,
+  untranscribedClauses,
+} from "@engine";
 
 import { SourceCitation, WarningStack } from "@/components/ui";
 import { formatDate } from "@/lib/format";
@@ -41,8 +47,10 @@ export default function SourcesPage() {
             body: (
               <>
                 The citation URLs on the pricing rulesets are placeholders until a licensed
-                cost source lands. Nothing here is a market quote and nothing here is legal
-                advice.
+                cost source lands. Every price JobPaper produces is an estimate only, not a
+                binding quote, and nothing here is legal advice. Where a state prescribes
+                notice wording word-for-word and JobPaper has not transcribed it, no
+                contract is generated for that state at all.
               </>
             ),
           },
@@ -120,6 +128,19 @@ export default function SourcesPage() {
                   Effective <span className="num">{formatDate(r.effectiveFrom)}</span> ·{" "}
                   <span className="num">{r.requiredClauses.length}</span> required clause
                   categories · clause text unverified
+                  {untranscribedClauses(r).length > 0 ? (
+                    <>
+                      {" "}
+                      ·{" "}
+                      {/* Ink, not flag. --flag is reserved for the irreversible;
+                          a blocked state is a gap to close, not a one-way door. */}
+                      <span className="text-ink" style={{ fontWeight: 600 }}>
+                        <span className="num">{untranscribedClauses(r).length}</span>{" "}
+                        prescribed by statute and not transcribed — no {r.stateName}{" "}
+                        contract is generated
+                      </span>
+                    </>
+                  ) : null}
                 </p>
                 <ul
                   className="text-dim mt-2 ml-5 list-disc"

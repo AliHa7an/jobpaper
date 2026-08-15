@@ -80,6 +80,9 @@ const estimateSchema = z.object({
 export const contractFactsSchema = z.object({
   stateId: z.enum(["CA", "TX", "FL", "NY", "PA"]),
   downPaymentCents: centsSchema.nonnegative(),
+  /* Optional so facts saved before PA's §517.9 cap was modelled still parse.
+     Absent reads as zero, which is the strict cap — the safe direction. */
+  specialOrderMaterialsCents: centsSchema.nonnegative().optional(),
 });
 
 export type StoredContractFacts = z.infer<typeof contractFactsSchema>;

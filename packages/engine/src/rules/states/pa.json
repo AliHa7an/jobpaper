@@ -1,9 +1,26 @@
 {
   "stateId": "PA",
   "stateName": "Pennsylvania",
-  "ruleSetVersion": "states-pa-2026-08",
+  "ruleSetVersion": "states-pa-2026-08.2",
   "effectiveFrom": "2026-08-01",
   "effectiveTo": null,
+  "_verificationNote": {
+    "lastPass": "2026-08-15",
+    "status": "PARTIALLY VERIFIED via SECONDARY sources only — see /VERIFICATION-STATUS.md. Batch A remediation applied 2026-08-15 (ruleSetVersion bumped to .2): down-payment cap cite and trigger corrected, registration-number cite corrected. PA prescribes no verbatim wording, so PA contracts still generate.",
+    "sourceProblem": "citations[0] is UNRESOLVED and is also the wrong KIND of source: it points at a PA Attorney General consumer-information page, not the statute, so it would not satisfy the citation invariant even if reachable. attorneygeneral.gov returns HTTP 403 (including its official Act 132 PDF) and legis.state.pa.us refuses connections from the verification environment. All findings below come from https://codes.findlaw.com/pa/... (SECONDARY). Re-confirm against the PA General Assembly's own text of Act 132 of 2008 before clearing any flag.",
+    "WRONG_CITES": {
+      "downpaymentCap": "FIXED 2026-08-15: requiredClauses[downpayment-cap].statute is now 73 P.S. 517.9. It previously cited 517.7(e). THAT SUBSECTION DOES NOT CONTAIN A DOWN PAYMENT LIMIT — 517.7 has no down payment cap at all; 517.7(a)(9) merely requires that the down payment and the cost of special-order materials be DISCLOSED AND LISTED SEPARATELY. The actual prohibition is in 73 P.S. 517.9 (prohibited acts). Source: https://codes.findlaw.com/pa/title-73-ps-trade-and-commerce/pa-st-sect-73-517-9/",
+      "registrationDisplay": "PARTLY FIXED 2026-08-15: requiredClauses[registration-number].statute is now 73 P.S. 517.7(a)(1). It previously cited 517.9. 517.9 IS THE PROHIBITED-ACTS SECTION AND IMPOSES NO DISPLAY DUTY — it penalises failure to register (517.9(1)) but does not require display of the registration number. The in-contract requirement is 517.7(a)(1). The ADVERTISING display requirement asserted by the clause text is UNRESOLVED — no fetched source supports it. Either locate the provision or drop the advertising half of the sentence.",
+      "threshold": "homeImprovementThresholdCents is correct at $500 but the clause at requiredClauses[hicpa-contract-contents] attributes it to 517.7(a). The $500 floor lives in the 517.2 DEFINITION of 'home improvement' ('the total cash price of all work agreed upon ... is more than $500'). 517.7(a) contains no dollar threshold."
+    },
+    "downpaymentTriggerIsWrong": "FIXED 2026-08-15: the trigger is now 'total > $5,000 and downpayment > 1/3 + specialOrderMaterials', which is what the clause prose has always said. The previous trigger 'downpayment > 33%' did not express the real rule. 73 P.S. 517.9 prohibits, FOR CONTRACTS WITH A TOTAL PRICE OF MORE THAN $5,000, receiving a deposit in excess of '(A) one-third of the home improvement contract price; or (B) one-third of the home improvement contract price PLUS THE COST OF SPECIAL ORDER MATERIALS'. The encoded trigger omits the >$5,000 gate, so it fires false positives on contracts of $5,000 or less where no cap applies; and it omits the special-order-materials addition, so it raises false alarms on any job with special-order materials where the lawful ceiling is above one-third. NOTE the clause TEXT at requiredClauses[downpayment-cap].text already describes the $5,000 gate and the materials addition correctly — the prose and the machine-readable trigger currently DISAGREE WITH EACH OTHER. Also '33%' is not one-third; use exact thirds arithmetic, not a basis-point approximation.",
+    "dependsOn": {
+      "hicpaContractContents": "517.7(a) requires more than the placeholder lists. Missing: the transaction date, the contractor's LIABILITY INSURANCE AMOUNTS, SUBCONTRACTOR INFORMATION, a TOLL-FREE NUMBER, and the notice of the right of rescission. No verbatim wording is prescribed for this clause.",
+      "rescissionRight": "VERIFIED. 517.7(b): an individual 'shall be permitted to rescind the contract without penalty REGARDLESS OF WHERE THE CONTRACT WAS SIGNED, within three business days of the date of signing.' NO VERBATIM NOTICE WORDING IS PRESCRIBED, so this clause may be drafted. The placeholder's 'except as otherwise provided by law for emergency work' carve-out was NOT confirmed in 517.7 — verify or remove it. The 'total > $500' trigger is correct in substance via 517.2.",
+      "licenseDisplayRequired": "true is correct for CONTRACT display — 517.7(a) lists the contractor registration number among required contract contents. Update citations[] and the clause statute field to 517.7(a)(1) accordingly."
+    },
+    "recheckCadence": "Re-verify after each PA legislative session. HICPA is Act 132 of 2008, codified at 73 P.S. 517.1 et seq. (unconsolidated statutes)."
+  },
   "citations": [
     {
       "label": "73 P.S. §517.1 et seq. — Home Improvement Consumer Protection Act (HICPA)",
@@ -18,31 +35,48 @@
       "title": "HICPA contract requirements",
       "text": "UNVERIFIED — ATTORNEY REVIEW REQUIRED. [Template] This home improvement contract is in writing, is signed by both parties, and contains the contractor's registration number, the approximate start and completion dates, a description of the work, the total sales price, and the amount of any down payment, as the Pennsylvania Home Improvement Consumer Protection Act requires for contracts over $500.",
       "trigger": "total >= threshold",
-      "statute": "73 P.S. §517.7(a)"
+      "statute": "73 P.S. §517.7(a)",
+      "textStatus": "DRAFTED"
     },
     {
       "id": "rescission-right",
       "title": "Three-day rescission right",
       "text": "UNVERIFIED — ATTORNEY REVIEW REQUIRED. [Template] You, the owner, may rescind this contract without penalty within three business days of signing, except as otherwise provided by law for emergency work you have separately authorized in writing. Notice of rescission must be delivered or mailed to the contractor at the address in this contract.",
       "trigger": "total > $500",
-      "statute": "73 P.S. §517.7(b)"
+      "statute": "73 P.S. §517.7(b)",
+      "textStatus": "DRAFTED"
     },
     {
       "id": "downpayment-cap",
       "title": "Down payment limit",
       "text": "UNVERIFIED — ATTORNEY REVIEW REQUIRED. [Template] For home improvement contracts over $5,000, Pennsylvania law prohibits a contractor from receiving a deposit exceeding one-third of the contract price, plus the cost of special-order materials. The down payment in this contract does not exceed that limit.",
-      "trigger": "downpayment > 33%",
-      "statute": "73 P.S. §517.7(e)"
+      "trigger": "total > $5,000 and downpayment > 1/3 + specialOrderMaterials",
+      "statute": "73 P.S. §517.9",
+      "textStatus": "DRAFTED",
+      "formatting": {
+        "notes": [
+          "No wording is prescribed for this clause; only the RULE matters. §517.9 prohibits, for contracts with a total price of more than $5,000, receiving a deposit exceeding one-third of the contract price, or one-third of the contract price plus the cost of special-order materials.",
+          "Exact thirds, not 33% — the engine compares deposit*3 against the price, so no rounding enters.",
+          "Where the job has no special-order materials, ContractFacts.specialOrderMaterialsCents is absent and the cap is exactly one-third: the strict reading."
+        ]
+      }
     },
     {
       "id": "registration-number",
       "title": "Contractor registration display",
       "text": "UNVERIFIED — ATTORNEY REVIEW REQUIRED. [Template] The contractor's Pennsylvania Home Improvement Contractor (HIC) registration number appears in this contract and in all advertising, as HICPA requires.",
       "trigger": "always",
-      "statute": "73 P.S. §517.9"
+      "statute": "73 P.S. §517.7(a)(1)",
+      "textStatus": "DRAFTED"
     }
   ],
-  "licenseDisplayRequired": true,
+  "licenseDisplay": {
+    "statewide": true,
+    "statute": "73 P.S. §517.7(a)(1)",
+    "sourceUrl": "https://codes.findlaw.com/pa/title-73-ps-trade-and-commerce/pa-st-sect-73-517-7/",
+    "note": "§517.7(a) lists the contractor's registration number among the required contents of a home improvement contract, so the duty holds for CONTRACT display. The ADVERTISING display duty asserted in requiredClauses[registration-number].text remains UNRESOLVED — no fetched source supports it. Verified via a SECONDARY host; re-confirm against the PA General Assembly's own text of Act 132 of 2008.",
+    "jurisdictions": []
+  },
   "prohibitedTerms": [
     "Waiver of federal, state, or local health or safety requirements",
     "Confession of judgment clauses",

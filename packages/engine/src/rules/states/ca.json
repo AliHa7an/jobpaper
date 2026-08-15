@@ -1,9 +1,23 @@
 {
   "stateId": "CA",
   "stateName": "California",
-  "ruleSetVersion": "states-ca-2026-08",
+  "ruleSetVersion": "states-ca-2026-08.2",
   "effectiveFrom": "2026-08-01",
   "effectiveTo": null,
+  "_verificationNote": {
+    "lastPass": "2026-08-15",
+    "status": "VERIFIED against the state's own site — see /VERIFICATION-STATUS.md. Batch A remediation applied 2026-08-15 (ruleSetVersion bumped to .2): prescribed-but-untranscribed clause text removed and marked, missing clauses added, cites corrected. Contract generation now FAILS CLOSED for this state where any clause is untranscribed.",
+    "sourceFetched": "https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?lawCode=BPC&sectionNum=7159 and .../sectionNum=7030.5 (both fetched 2026-08-15, official CA source)",
+    "VERBATIM_MANDATED": "FIXED (structurally) 2026-08-15: all FOUR paraphrases have been EMPTIED and marked VERBATIM_REQUIRED_NOT_TRANSCRIBED, and the engine now refuses to generate any CA contract until they are transcribed. A paraphrase is not a weaker clause — it is a non-compliant contract. Transcribe each character-for-character from the statute; do NOT reconstruct from memory. (1) requiredClauses[mechanics-lien-warning] — B&P 7159(e)(4), verbatim; the statutory warning continues past where the removed placeholder stopped, into prescribed language on preliminary notices and joint checks. (2) requiredClauses[right-to-cancel] — 7159(e)(6)(B)(i), verbatim, AT LEAST 12-POINT BOLDFACE; the removed placeholder's '(five business days if you are 65 or older)' belongs to the separate senior-citizen variant and must not be merged into the standard notice. (3) requiredClauses[cslb-notice] — 7159(e)(5), verbatim, AT LEAST 12-POINT TYPEFACE; the removed placeholder's hard-coded PO Box must not be carried forward without confirming it against current statutory text. (4) requiredClauses[downpayment-cap] — 7159(d)(8) prescribes a single capitalised sentence in AT LEAST 12-POINT BOLDFACE, not the multi-sentence prose that was encoded here. NOTE the down-payment RULE itself (lesser of $1,000 or 10%) was verified correct and is unchanged; only the text is missing.",
+    "dependsOn": {
+      "homeImprovementThresholdCents": "VERIFIED at $500. Statute reads 'exceeds five hundred dollars ($500)', so the trigger 'total >= threshold' is off by one — should be strictly greater than.",
+      "downpaymentCapRule": "VERIFIED. B&P 7159(d)(8): lesser of $1,000 or 10 percent of the contract price. The RULE as encoded is correct; only the TEXT is non-compliant.",
+      "writtenContractClause": "7159(d) enumerates THIRTEEN required elements; the placeholder covers roughly two. The cite at requiredClauses[written-contract].statute says 7159(c) — that is the writing requirement; the contents obligation is 7159(d).",
+      "licenseDisplayRequired": "VERIFIED true, but the authority is B&P 7030.5, which is NOT currently in citations[]. Add it. 7030.5 requires the licence number in all construction contracts, subcontracts and calls for bid, and all forms of advertising.",
+      "typographyRequirements": "FIXED (recorded) 2026-08-15: the clause schema now carries a `formatting` object and all four CA typography requirements are recorded there (12-point boldface / 12-point typeface). RECORDING IS NOT RENDERING — no contract surface yet sets type size or weight per clause, so this remains a blocker for generation even once the text is transcribed."
+    },
+    "recheckCadence": "Re-verify annually and after any legislative session amending B&P div. 3 ch. 9. The CSLB mailing address in the 7159(e)(5) notice can change without a statutory amendment."
+  },
   "citations": [
     {
       "label": "CA Bus. & Prof. Code §7159 (home improvement contracts)",
@@ -23,38 +37,83 @@
       "title": "Written contract required",
       "text": "UNVERIFIED — ATTORNEY REVIEW REQUIRED. [Template] This agreement for home improvement work over $500 is set out in writing and signed by both parties before any work begins, as California law requires. The contract price is stated on the face of this agreement, and no work outside this scope will be performed without a signed change order.",
       "trigger": "total >= threshold",
-      "statute": "Bus. & Prof. Code §7159(c)"
+      "statute": "Bus. & Prof. Code §7159(c)",
+      "textStatus": "DRAFTED"
     },
     {
       "id": "right-to-cancel",
       "title": "Three-day right to cancel",
-      "text": "UNVERIFIED — ATTORNEY REVIEW REQUIRED. [Template] You, the buyer, have the right to cancel this contract within three business days after signing (five business days if you are 65 or older). To cancel, deliver or mail a signed and dated notice of cancellation to the contractor's address stated in this contract before midnight of the third (or fifth) business day.",
+      "text": "",
       "trigger": "always",
-      "statute": "Bus. & Prof. Code §7159(e); Civ. Code §1689.6"
+      "statute": "Bus. & Prof. Code §7159(e)(6)(B)(i)",
+      "textStatus": "VERBATIM_REQUIRED_NOT_TRANSCRIBED",
+      "sourceUrl": "https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?lawCode=BPC&sectionNum=7159",
+      "formatting": {
+        "minPointSize": 12,
+        "boldface": true,
+        "notes": [
+          "The removed placeholder merged '(five business days if you are 65 or older)' into the standard notice. That five-day window belongs to the SEPARATE senior-citizen variant and must not appear in the standard text.",
+          "The senior-citizen variant is a distinct prescribed notice and is not yet modelled as its own clause."
+        ]
+      }
     },
     {
       "id": "downpayment-cap",
       "title": "Down payment limit notice",
-      "text": "UNVERIFIED — ATTORNEY REVIEW REQUIRED. [Template] California law limits the down payment on a home improvement contract to $1,000 or 10 percent of the contract price, whichever is less. The down payment stated in this contract may not exceed that amount, and the contractor may not collect payment for work not yet performed or materials not yet delivered.",
+      "text": "",
       "trigger": "downpayment > min($1000, 10%)",
-      "statute": "Bus. & Prof. Code §7159(d)(8)"
+      "statute": "Bus. & Prof. Code §7159(d)(8)",
+      "textStatus": "VERBATIM_REQUIRED_NOT_TRANSCRIBED",
+      "sourceUrl": "https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?lawCode=BPC&sectionNum=7159",
+      "formatting": {
+        "minPointSize": 12,
+        "boldface": true,
+        "capitalized": true,
+        "notes": [
+          "§7159(d)(8) prescribes a SINGLE capitalised sentence. The removed placeholder was multi-sentence prose.",
+          "The underlying RULE — down payment may not exceed the lesser of $1,000 or 10 percent of the contract price — is verified and is what `trigger` encodes. Only the notice wording is missing."
+        ]
+      }
     },
     {
       "id": "mechanics-lien-warning",
       "title": "Mechanics lien warning",
-      "text": "UNVERIFIED — ATTORNEY REVIEW REQUIRED. [Template] MECHANICS LIEN WARNING: Anyone who helps improve your property, but who is not paid, may record what is called a mechanics lien on your property. A mechanics lien is a claim, like a mortgage or home equity loan, made against your property and recorded with the county recorder. Even if you pay your contractor in full, unpaid subcontractors, suppliers, and laborers who helped improve your property may record mechanics liens.",
+      "text": "",
       "trigger": "always",
-      "statute": "Bus. & Prof. Code §7159(e)"
+      "statute": "Bus. & Prof. Code §7159(e)(4)",
+      "textStatus": "VERBATIM_REQUIRED_NOT_TRANSCRIBED",
+      "sourceUrl": "https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?lawCode=BPC&sectionNum=7159",
+      "formatting": {
+        "notes": [
+          "The statutory warning continues past where the removed placeholder stopped, into prescribed language on preliminary notices and joint checks.",
+          "§7159(e)(4) states no minimum point size; check the subdivision's own placement requirements when transcribing."
+        ]
+      }
     },
     {
       "id": "cslb-notice",
       "title": "CSLB information notice",
-      "text": "UNVERIFIED — ATTORNEY REVIEW REQUIRED. [Template] Contractors are required by law to be licensed and regulated by the Contractors State License Board, which has jurisdiction to investigate complaints against contractors. Any questions concerning a contractor may be referred to the Registrar, Contractors State License Board, P.O. Box 26000, Sacramento, CA 95826.",
+      "text": "",
       "trigger": "always",
-      "statute": "Bus. & Prof. Code §7159(e)"
+      "statute": "Bus. & Prof. Code §7159(e)(5)",
+      "textStatus": "VERBATIM_REQUIRED_NOT_TRANSCRIBED",
+      "sourceUrl": "https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?lawCode=BPC&sectionNum=7159",
+      "formatting": {
+        "minPointSize": 12,
+        "notes": [
+          "At least 12-point typeface. The statute does not require boldface for this notice.",
+          "The removed placeholder carried a hard-coded CSLB PO Box. Do not carry any mailing address forward without confirming it against the current statutory text — the address can change without a statutory amendment."
+        ]
+      }
     }
   ],
-  "licenseDisplayRequired": true,
+  "licenseDisplay": {
+    "statewide": true,
+    "statute": "Bus. & Prof. Code §7030.5",
+    "sourceUrl": "https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?lawCode=BPC&sectionNum=7030.5",
+    "note": "§7030.5 requires every licensee to include the licence number in all construction contracts, in subcontracts and calls for bid, and in all forms of advertising.",
+    "jurisdictions": []
+  },
   "prohibitedTerms": [
     "Any waiver of the buyer's right to cancel",
     "Confession of judgment or waiver of legal rights",
